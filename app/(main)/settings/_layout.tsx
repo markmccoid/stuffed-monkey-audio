@@ -2,6 +2,7 @@ import { View, Text, Pressable } from "react-native";
 import React from "react";
 import { Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { homeHeaderButton } from "../../../src/components/navHelpers/headerHelpers";
 // import { drawerLeftMenu, homeHeaderButton } from "../../../utils/drawerHelpers";
 
 export const drawerLeftMenu = (
@@ -30,6 +31,7 @@ const SettingsScreenLayout = () => {
       screenOptions={({ navigation }) => ({
         // headerRight: () => homeHeaderButton(navigation, "stack"),
         headerLeft: () => drawerLeftMenu(navigation, "stack"),
+        headerRight: () => homeHeaderButton(navigation, "stack"),
       })}
     >
       <Stack.Screen

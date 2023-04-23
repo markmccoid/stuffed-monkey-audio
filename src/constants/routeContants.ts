@@ -1,1 +1,1 @@
-export const homeRoute = "(tabs)";
+export const homeRoute = "audio";

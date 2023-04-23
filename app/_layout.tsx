@@ -5,7 +5,7 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { SplashScreen, Stack, useRouter } from "expo-router";
+import { Redirect, Slot, SplashScreen, Stack, useRouter } from "expo-router";
 import Drawer from "expo-router/drawer";
 import { useEffect } from "react";
 import { useColorScheme } from "react-native";
@@ -42,45 +42,17 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
-
-  const DrawerNavigator = () => {
-    return (
-      <Drawer
-        // drawerContent={(props) => <DrawerContents {...props} />}
-        screenOptions={{
-          headerShown: false,
-          drawerStyle: {
-            backgroundColor: "#c6cbef",
-            width: 240,
-          },
-        }}
-      >
-        <Drawer.Screen name="(tabs)" />
-        <Drawer.Screen name="settings" />
-      </Drawer>
-    );
-  };
+  const router = useRouter();
+  // Redirect to what I want to be the initial screen.
+  // Could leverage this to let the user save the start screen.
+  useEffect(() => {
+    router.replace("audio");
+  }, []);
 
   return (
     <>
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        {/* <Stack>
-          <Stack.Screen name="" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: "modal" }} />
-        </Stack> */}
-        <Drawer
-          // drawerContent={(props) => <DrawerContents {...props} />}
-          screenOptions={{
-            headerShown: false,
-            drawerStyle: {
-              backgroundColor: "#c6cbef",
-              width: 240,
-            },
-          }}
-        >
-          <Drawer.Screen name="(tabs)" />
-          <Drawer.Screen name="settings" />
-        </Drawer>
+        <Slot />
       </ThemeProvider>
     </>
   );

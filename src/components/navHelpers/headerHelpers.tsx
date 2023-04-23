@@ -1,7 +1,10 @@
 import { Pressable } from "react-native";
+import { MotiPressable } from "moti/interactions";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import { homeRoute } from "../../constants/routeContants";
+import { HeaderIconPressable } from "../common/buttons/Pressables";
+import { DrawerMenuIcon } from "../common/svg/Icons";
 
 type NavigatorType = "stack" | "tab" | "drawer";
 
@@ -9,19 +12,12 @@ export const drawerLeftMenu = (
   navigation,
   navigatorType: NavigatorType = "drawer"
 ) => {
-  const marginLeft = 10; // navigatorType === "stack" ? -6 : 10;
+  const marginLeft = navigatorType === "stack" ? -6 : 10;
   // const marginLeft = navigatorType === "stack" ? -6 : 10;
   return (
-    <Pressable onPress={() => navigation.openDrawer()}>
-      {({ pressed }) => (
-        <Ionicons
-          name="ios-menu"
-          size={25}
-          color="black"
-          style={{ marginLeft: marginLeft, opacity: pressed ? 0.7 : 1 }}
-        />
-      )}
-    </Pressable>
+    <HeaderIconPressable onPress={() => navigation.openDrawer()}>
+      <DrawerMenuIcon size={25} />
+    </HeaderIconPressable>
   );
 };
 
@@ -32,17 +28,10 @@ export const homeHeaderButton = (
   //const marginLeft = navigatorType === "stack" ? -6 : 10;
 
   return (
-    <Link href={homeRoute} asChild>
-      <Pressable>
-        {({ pressed }) => (
-          <FontAwesome
-            name="home"
-            size={25}
-            color="blue"
-            style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-          />
-        )}
-      </Pressable>
+    <Link href={homeRoute} replace asChild>
+      <HeaderIconPressable>
+        <FontAwesome name="home" size={25} color="blue" />
+      </HeaderIconPressable>
     </Link>
   );
 };

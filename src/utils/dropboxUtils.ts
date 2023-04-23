@@ -49,6 +49,46 @@ export const refreshToken = async (refreshToken: string) => {
     */
   } catch (e) {
     const err = e as AxiosError;
+    // console.log("error =", typeof err, err.code, err.config, err.request);
+    return {
+      token: undefined,
+      expiresIn: 0,
+      error: err.message,
+    };
+  }
+};
+//* refreshToken ----------------------
+/**
+ *
+ * @param refreshToken
+ * @returns token
+ */
+export const revokeDropboxAccess = async (token: string) => {
+  const username = APP_KEY; // dropbox app key
+  const password = APP_SECRECT; // dropbox app secret
+  const authHeader = `Bearer ${token}`;
+  try {
+    const response = await axios.post(
+      "https://api.dropboxapi.com/2/auth/token/revoke",
+      undefined,
+      {
+        headers: {
+          Authorization: authHeader,
+        },
+      }
+    );
+    // Only returning the access token
+    return {
+      token: undefined,
+    };
+    /* data: {
+        access_token: string;
+        token_type: string; //"bearer"
+        expires_in: number // millisecons usually 14400
+    }
+    */
+  } catch (e) {
+    const err = e as AxiosError;
     console.log("error =", typeof err, err.code, err.config, err.request);
     return {
       token: "",
@@ -71,7 +111,6 @@ export const refreshToken = async (refreshToken: string) => {
  *  - return { token: undefined }
  * @returns Object = { token: string | undefined, tokenExpireDate?: number }
  */
-
 export const checkDropboxToken = async () => {
   const token = await getDropboxToken();
   console.log("checkDropboxToken - Token from Storage", token);
