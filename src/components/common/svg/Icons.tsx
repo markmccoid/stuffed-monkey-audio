@@ -128,3 +128,7 @@ export const EmptyMDHeartIcon = ({ size = 25, color, style }: Props) => {
 export const MDHeartIcon = ({ size = 25, color, style }: Props) => {
   return <Ionicons name="ios-heart" color={color} size={size} style={style} />;
 };
+
+export const DropboxIcon = ({ size = 25, color, style }: Props) => {
+  return <FontAwesome name="dropbox" color={color} size={size} style={style} />;
+};

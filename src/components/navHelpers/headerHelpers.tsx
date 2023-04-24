@@ -15,9 +15,12 @@ export const drawerLeftMenu = (
   const marginLeft = navigatorType === "stack" ? -6 : 10;
   // const marginLeft = navigatorType === "stack" ? -6 : 10;
   return (
-    <HeaderIconPressable onPress={() => navigation.openDrawer()}>
+    <Pressable onPress={() => navigation.openDrawer()}>
       <DrawerMenuIcon size={25} />
-    </HeaderIconPressable>
+    </Pressable>
+    // <HeaderIconPressable onPress={() => navigation.openDrawer()}>
+    //   <DrawerMenuIcon size={25} />
+    // </HeaderIconPressable>
   );
 };
 
@@ -29,9 +32,12 @@ export const homeHeaderButton = (
 
   return (
     <Link href={homeRoute} replace asChild>
-      <HeaderIconPressable>
+      <Pressable>
         <FontAwesome name="home" size={25} color="blue" />
-      </HeaderIconPressable>
+      </Pressable>
+      {/* <HeaderIconPressable>
+        <FontAwesome name="home" size={25} color="blue" />
+      </HeaderIconPressable> */}
     </Link>
   );
 };

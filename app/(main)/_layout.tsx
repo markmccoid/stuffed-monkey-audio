@@ -31,7 +31,7 @@ export default function DrawerLayout() {
       </Drawer>
     );
   };
-  console.log("drawer layout");
+
   return (
     <>
       <Drawer

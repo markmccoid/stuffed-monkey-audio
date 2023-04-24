@@ -14,7 +14,6 @@ export const HeaderIconPressable = ({ onPress, children }: Props) => {
         () =>
           ({ hovered, pressed }) => {
             "worklet";
-
             return {
               opacity: hovered || pressed ? 0.5 : 1,
               transform: [{ scale: hovered || pressed ? 0.85 : 1 }],

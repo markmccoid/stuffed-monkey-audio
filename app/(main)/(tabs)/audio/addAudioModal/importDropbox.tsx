@@ -1,12 +1,12 @@
 import { View, Text } from "react-native";
 import React from "react";
 
-const audioFilter = () => {
+const ImportDropbox = () => {
   return (
     <View>
-      <Text>audioFilter</Text>
+      <Text>Import Dropbox</Text>
     </View>
   );
 };
 
-export default audioFilter;
+export default ImportDropbox;

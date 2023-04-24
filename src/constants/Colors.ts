@@ -22,4 +22,5 @@ export const colors = {
   tintColor: tintColorLight,
   headerBG: "#FEC872",
   menuBG: "#FCFCFA",
+  dropboxBlue: "#007ee5",
 };
