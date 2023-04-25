@@ -1,13 +1,19 @@
 import { View, Text, Pressable } from "react-native";
 import { MotiPressable } from "moti/interactions";
 import React from "react";
-import { Link, Stack } from "expo-router";
+import { Link, Stack, useNavigation } from "expo-router";
 import { DropboxIcon } from "../../../../../src/components/common/svg/Icons";
 import { colors } from "../../../../../src/constants/Colors";
 
 const AddAudioScreen = () => {
+  const navigation = useNavigation();
+  console.log("GO BACK", navigation.getState());
+
   return (
     <View style={{ margin: 0 }}>
+      <Pressable onPress={() => navigation.goBack()}>
+        <Text className="text-red-700">GO BACK</Text>
+      </Pressable>
       <View
         style={{
           paddingHorizontal: 20,

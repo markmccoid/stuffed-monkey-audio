@@ -129,6 +129,30 @@ export const MDHeartIcon = ({ size = 25, color, style }: Props) => {
   return <Ionicons name="ios-heart" color={color} size={size} style={style} />;
 };
 
+//-- -----------------------------------
+//-- DROPBOX Icons
+//-- -----------------------------------
 export const DropboxIcon = ({ size = 25, color, style }: Props) => {
   return <FontAwesome name="dropbox" color={color} size={size} style={style} />;
+};
+
+export const FolderClosedIcon = ({ size = 25, color, style }: Props) => {
+  return <AntDesign name="folder1" size={size} color={color} style={style} />;
+};
+export const FolderOpenIcon = ({ size = 25, color, style }: Props) => {
+  return <AntDesign name="folder1" size={size} color={color} style={style} />;
+};
+export const FileAudioIcon = ({ size = 25, color, style }: Props) => {
+  return (
+    <FontAwesome5 name="file-audio" size={size} color={color} style={style} />
+  );
+};
+export const FileMovieIcon = ({ size = 25, color, style }: Props) => {
+  return (
+    <FontAwesome5 name="file-video" size={size} color={color} style={style} />
+  );
+};
+
+export const FileGeneralIcon = ({ size = 25, color, style }: Props) => {
+  return <FontAwesome name="file" size={size} color={color} style={style} />;
 };

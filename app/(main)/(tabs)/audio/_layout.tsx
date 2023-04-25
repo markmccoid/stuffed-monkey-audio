@@ -40,6 +40,10 @@ export default function AudioListStack() {
         name="addAudioModal"
         options={{ presentation: "modal", headerShown: false }}
       />
+      <Stack.Screen
+        name="modal"
+        options={{ presentation: "modal", headerShown: false }}
+      />
     </Stack>
   );
 }

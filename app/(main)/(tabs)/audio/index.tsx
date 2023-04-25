@@ -13,6 +13,9 @@ export default function TabOneScreen() {
       <Link href="./audio/addAudioModal">
         <Text>Filter</Text>
       </Link>
+      <Link href="./audio/modal">
+        <Text>Modal</Text>
+      </Link>
       <Monkey />
       <AddBook />
     </View>

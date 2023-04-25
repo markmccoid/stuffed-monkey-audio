@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Stack, Link, useNavigation } from "expo-router";
+import { Stack, Link, useNavigation, useRouter } from "expo-router";
 import { Pressable, Text, TouchableOpacity } from "react-native";
 import { MotiPressable } from "moti/interactions";
 
@@ -7,7 +7,8 @@ import { MotiPressable } from "moti/interactions";
 // import { touchablePress } from "../../../../utils/pressableStyles";
 
 export default function AddAudioLayout() {
-  const navigation = useNavigation();
+  const router = useRouter();
+
   return (
     <Stack screenOptions={{ headerShown: true }}>
       <Stack.Screen
@@ -15,6 +16,13 @@ export default function AddAudioLayout() {
         options={{
           presentation: "modal",
           title: "Import",
+          headerRight: () => (
+            <>
+              <Pressable onPress={() => router.back()}>
+                <Text>Done</Text>
+              </Pressable>
+            </>
+          ),
         }}
       />
       <Stack.Screen

@@ -113,7 +113,6 @@ export const revokeDropboxAccess = async (token: string) => {
  */
 export const checkDropboxToken = async () => {
   const token = await getDropboxToken();
-  console.log("checkDropboxToken - Token from Storage", token);
   if (token) {
     // token exists, so check to see if still valid
     const { valid } = await isDropboxTokenValid(token);
@@ -297,6 +296,7 @@ export const listDropboxFiles = async (
   path: string = ""
 ): Promise<ListOfFiles> => {
   const { token } = await checkDropboxToken(); //getDropboxToken();
+
   // If no token throw an Error. Need to catch it somewhere
   if (!token) {
     throw new Error("Invalid Token");
