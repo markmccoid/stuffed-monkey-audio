@@ -7,6 +7,7 @@ import {
 import axios, { AxiosError } from "axios";
 import base64 from "react-native-base64";
 import Constants from "expo-constants";
+import sortBy from "lodash/sortBy";
 
 type AuthToken = {
   token: string;
@@ -207,16 +208,17 @@ export const getAuthToken = async (authKey: string): Promise<AuthToken> => {
     };
   }
 };
-
+//-----------------------------------------
 //* downloadDropboxFile ----------------------
+//-----------------------------------------
 export const downloadDropboxFile = async <T>(
-  token: string,
-  folder: string = "/",
-  filename: string
+  pathWithFile: string
 ): Promise<T> => {
+  const { token } = await checkDropboxToken();
   // path directive must be stringified when sending to "Dropbox-API-Arg"
   // end result --> '{"path": "/dropboxupload.txt"}'
-  const path = { path: `${folder}${filename}` };
+  let path = { path: pathWithFile };
+
   return axios
     .get(`https://content.dropboxapi.com/2/files/download`, {
       headers: {
@@ -229,15 +231,16 @@ export const downloadDropboxFile = async <T>(
       error: err;
     });
 };
-
+//-----------------------------------------
 //* uploadDropboxFile ----------------------
+//-----------------------------------------
 // NOTE: if you get status/error 409 it usually means
 export const uploadDropboxFile = async (
-  token: string,
   folder: string = "/",
   filename: string,
   data
 ) => {
+  const { token } = await checkDropboxToken();
   // path directive must be stringified when sending to "Dropbox-API-Arg"
   // end result --> '{"path": "/dropboxupload.txt"}'
   const path = { path: `${folder}${filename}`, mode: "overwrite" };
@@ -264,14 +267,14 @@ export const uploadDropboxFile = async (
     }));
 };
 
-type FolderEntry = {
+export type FolderEntry = {
   [".tag"]: "folder";
   name: string;
   path_lower: string;
   path_display: string;
   id: string;
 };
-type FileEntry = {
+export type FileEntry = {
   [".tag"]: "file";
   name: string;
   path_lower: string;
@@ -291,10 +294,16 @@ export type ListOfFiles = {
   has_more: boolean;
 };
 
+export type DropboxDir = {
+  folders: FolderEntry[];
+  files: FileEntry[];
+};
+//-----------------------------------------
 //* listDropboxFiles ----------------------
+//-----------------------------------------
 export const listDropboxFiles = async (
   path: string = ""
-): Promise<ListOfFiles> => {
+): Promise<DropboxDir> => {
   const { token } = await checkDropboxToken(); //getDropboxToken();
 
   // If no token throw an Error. Need to catch it somewhere
@@ -328,15 +337,26 @@ export const listDropboxFiles = async (
       throw new Error(err);
     }
   }
-  return resp?.data;
-  // .then((resp) => ({
-  //   status: resp.status,
-  //   error: undefined,
-  // }))
-  // .catch((err) => ({
-  //   status: undefined,
-  //   error: err,
-  // }));
+  const {
+    cursor,
+    entries,
+    has_more,
+  }: { cursor: string; entries: Entries[]; has_more: boolean } = resp?.data;
+  let folders = [];
+  let files = [];
+  for (const item of entries) {
+    if (item[".tag"] === "folder") {
+      folders.push(item);
+    } else if (item[".tag"] === "file") {
+      files.push(item);
+    }
+  }
+  folders = sortBy(folders, [(o) => o.name.toLowerCase()]);
+  files = sortBy(files, [(o) => o.name.toLowerCase()]);
+  return {
+    folders,
+    files,
+  };
 };
 
 //* Check token ----------------------

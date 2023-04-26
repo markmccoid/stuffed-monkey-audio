@@ -7,16 +7,37 @@ import {
   StyleSheet,
 } from "react-native";
 import React from "react";
-import { listDropboxFiles, ListOfFiles } from "../../utils/dropboxUtils";
+import {
+  listDropboxFiles,
+  DropboxDir,
+  FileEntry,
+  downloadDropboxFile,
+} from "../../utils/dropboxUtils";
 import BrowserActionBar from "./ExplorerActionBar";
 import { Link } from "expo-router";
 import { FileAudioIcon, FolderClosedIcon } from "../common/svg/Icons";
 
+import * as FileSystem from "expo-file-system";
+
 const ExplorerContainer = () => {
-  const [files, setFiles] = React.useState<ListOfFiles>();
+  const [files, setFiles] = React.useState<DropboxDir>();
   const [currentPath, setCurrentPath] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
   const [isError, setIsError] = React.useState(undefined);
+
+  const testDownload = async (file: FileEntry) => {
+    if (file.name.includes("mp3") || file.name.includes("txt")) {
+      const download = await downloadDropboxFile(file.path_lower);
+      // Get the document directory URI
+      let documentDirectoryUri = FileSystem.documentDirectory + file.name;
+
+      // Write the contents of newFile to the document directory
+      await FileSystem.writeAsStringAsync(documentDirectoryUri, download, {
+        encoding: FileSystem.EncodingType.UTF8,
+      });
+      console.log("DOWNLOAD and DONE SAVING", documentDirectoryUri);
+    }
+  };
   React.useEffect(() => {
     const getFiles = async () => {
       setIsLoading(true);
@@ -74,29 +95,28 @@ const ExplorerContainer = () => {
         </View>
       )}
       <ScrollView>
-        {files?.entries.map((file) => {
-          if (file[".tag"] === "folder") {
-            return (
-              <TouchableOpacity
-                onPress={() => onNavigateForward(file.path_lower)}
-                key={file.id}
-              >
-                <View className="p-3 border border-black flex-row items-center">
-                  <FolderClosedIcon />
-                  <Text className="ml-3 font-bold">{file.name}</Text>
-                </View>
-              </TouchableOpacity>
-            );
-          } else if (file[".tag"] === "file") {
-            return (
-              <TouchableOpacity key={file.id}>
-                <View className="p-3 border border-red-700 flex-row items-center">
-                  <FileAudioIcon />
-                  <Text className="ml-3 text-red-700">{file.name}</Text>
-                </View>
-              </TouchableOpacity>
-            );
-          }
+        {files?.folders.map((folder) => {
+          return (
+            <TouchableOpacity
+              onPress={() => onNavigateForward(folder.path_lower)}
+              key={folder.id}
+            >
+              <View className="p-3 border border-black flex-row items-center">
+                <FolderClosedIcon />
+                <Text className="ml-3 font-bold">{folder.name}</Text>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+        {files?.files.map((file) => {
+          return (
+            <TouchableOpacity key={file.id} onPress={() => testDownload(file)}>
+              <View className="p-3 border border-red-700 flex-row items-center">
+                <FileAudioIcon />
+                <Text className="ml-3 text-red-700">{file.name}</Text>
+              </View>
+            </TouchableOpacity>
+          );
         })}
       </ScrollView>
     </View>

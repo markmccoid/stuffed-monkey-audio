@@ -19,7 +19,9 @@
     "dotenv": "^16.0.3",
     "expo": "~48.0.11",
     "expo-auth-session": "~4.0.3",
+    "expo-av": "~13.2.1",
     "expo-constants": "~14.2.1",
+    "expo-file-system": "~15.2.2",
     "expo-font": "~11.1.1",
     "expo-linking": "~4.0.1",
     "expo-router": "^1.5.2",
@@ -28,6 +30,7 @@
     "expo-status-bar": "~1.4.4",
     "expo-system-ui": "~2.2.1",
     "expo-web-browser": "~12.1.1",
+    "lodash": "^4.17.21",
     "moti": "^0.25.1",
     "nativewind": "^2.0.11",
     "react": "18.2.0",
@@ -40,10 +43,13 @@
     "react-native-safe-area-context": "4.5.0",
     "react-native-screens": "~3.20.0",
     "react-native-svg": "13.4.0",
-    "react-native-web": "~0.18.10"
+    "react-native-track-player": "^3.2.0",
+    "react-native-web": "~0.18.10",
+    "@react-native-community/slider": "4.4.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@types/lodash": "^4.14.194",
     "@types/react": "~18.0.14",
     "@types/react-native": "^0.71.6",
     "@types/react-native-base64": "^0.2.0",
