@@ -208,6 +208,42 @@ export const getAuthToken = async (authKey: string): Promise<AuthToken> => {
     };
   }
 };
+
+//-----------------------------------------
+//* getDropboxFileLink ----------------------
+//-----------------------------------------
+
+export const getDropboxFileLink = async (
+  pathWithFile: string
+): Promise<string> => {
+  const { token } = await checkDropboxToken();
+  // path directive must be stringified when sending to "Dropbox-API-Arg"
+  // end result --> '{"path": "/dropboxupload.txt"}'
+  let path = { path: pathWithFile };
+
+  // -- Alternate way to use Axios, pass config
+  // let config = {
+  //   method: "post",
+  //   maxBodyLength: Infinity,
+  //   url: "https://api.dropboxapi.com/2/files/get_temporary_link",
+  //   headers: {
+  //     "Content-Type": "application/json",
+  //     Authorization: `Bearer ${token}`,
+  //   },
+  //   data: path,
+  // };
+  return axios
+    .post(`https://api.dropboxapi.com/2/files/get_temporary_link`, path, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    .then((resp) => resp.data.link)
+    .catch((err) => {
+      error: err;
+    });
+};
+
 //-----------------------------------------
 //* downloadDropboxFile ----------------------
 //-----------------------------------------

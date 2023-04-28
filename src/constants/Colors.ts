@@ -23,4 +23,5 @@ export const colors = {
   headerBG: "#FEC872",
   menuBG: "#FCFCFA",
   dropboxBlue: "#007ee5",
+  deleteRed: "#c70000",
 };

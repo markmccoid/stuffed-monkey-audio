@@ -12,12 +12,31 @@ import {
   DropboxDir,
   FileEntry,
   downloadDropboxFile,
+  getDropboxFileLink,
 } from "../../utils/dropboxUtils";
 import BrowserActionBar from "./ExplorerActionBar";
 import { Link } from "expo-router";
 import { FileAudioIcon, FolderClosedIcon } from "../common/svg/Icons";
-
+import { formatBytes } from "../../utils/formatUtils";
 import * as FileSystem from "expo-file-system";
+
+function filterAudioFiles(filesAndFolders: DropboxDir) {
+  const files = filesAndFolders.files;
+  const AUDIO_FORMATS = [
+    "mp3",
+    "mb4",
+    "wav",
+    "aiff",
+    "aac",
+    "ogg",
+    "wma",
+    "flac",
+  ];
+  const newFiles = files.filter((file) =>
+    AUDIO_FORMATS.includes(file.name.slice(file.name.lastIndexOf(".") + 1))
+  );
+  return { folders: filesAndFolders.folders, files: newFiles };
+}
 
 const ExplorerContainer = () => {
   const [files, setFiles] = React.useState<DropboxDir>();
@@ -26,24 +45,23 @@ const ExplorerContainer = () => {
   const [isError, setIsError] = React.useState(undefined);
 
   const testDownload = async (file: FileEntry) => {
-    if (file.name.includes("mp3") || file.name.includes("txt")) {
-      const download = await downloadDropboxFile(file.path_lower);
-      // Get the document directory URI
-      let documentDirectoryUri = FileSystem.documentDirectory + file.name;
+    setIsLoading(true);
+    const downloadLink = await getDropboxFileLink(file.path_lower);
 
-      // Write the contents of newFile to the document directory
-      await FileSystem.writeAsStringAsync(documentDirectoryUri, download, {
-        encoding: FileSystem.EncodingType.UTF8,
-      });
+    if (file.name.includes("mp3") || file.name.includes("txt")) {
+      let documentDirectoryUri = FileSystem.documentDirectory + file.name;
+      await FileSystem.downloadAsync(downloadLink, documentDirectoryUri);
       console.log("DOWNLOAD and DONE SAVING", documentDirectoryUri);
     }
+    setIsLoading(false);
   };
   React.useEffect(() => {
     const getFiles = async () => {
       setIsLoading(true);
       try {
         const files = await listDropboxFiles(currentPath);
-        setFiles(files);
+        const filteredFiles = filterAudioFiles(files);
+        setFiles(filteredFiles);
       } catch (err) {
         console.log(err);
         setIsError(err.cause);
@@ -114,6 +132,7 @@ const ExplorerContainer = () => {
               <View className="p-3 border border-red-700 flex-row items-center">
                 <FileAudioIcon />
                 <Text className="ml-3 text-red-700">{file.name}</Text>
+                <Text className="ml-3 font-bold">{formatBytes(file.size)}</Text>
               </View>
             </TouchableOpacity>
           );
