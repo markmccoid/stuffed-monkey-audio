@@ -11,7 +11,8 @@
       "ios": {
         "buildConfiguration": "Debug",
         "resourceClass": "m-medium"
-      }
+      },
+      "developmentClient": true
     },
     "preview": {
       "distribution": "internal",

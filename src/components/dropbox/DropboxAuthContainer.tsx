@@ -92,7 +92,7 @@ const DropboxAuthContainer = () => {
   return (
     <View>
       <Text>DropboxAuthContainer</Text>
-      {!isMounted && <ActivityIndicator size="large" />}
+      {!isMounted?.current && <ActivityIndicator size="large" />}
       {validToken && isMounted?.current && (
         <View>
           <Text>Dropbox is Authorized</Text>

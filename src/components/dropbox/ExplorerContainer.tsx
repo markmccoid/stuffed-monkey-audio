@@ -48,8 +48,10 @@ const ExplorerContainer = () => {
     setIsLoading(true);
     const downloadLink = await getDropboxFileLink(file.path_lower);
 
-    if (file.name.includes("mp3") || file.name.includes("txt")) {
-      let documentDirectoryUri = FileSystem.documentDirectory + file.name;
+    if (file.name.includes("mp3") || file.name.includes("wav")) {
+      // "Clean" filename by only allowing upper/lower chars, digits, and underscores
+      const filename = file.name.replace(/[^\w.]/g, "_");
+      let documentDirectoryUri = FileSystem.documentDirectory + filename;
       await FileSystem.downloadAsync(downloadLink, documentDirectoryUri);
       console.log("DOWNLOAD and DONE SAVING", documentDirectoryUri);
     }

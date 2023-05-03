@@ -1,51 +1,57 @@
 import { View, Text, StyleSheet } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Stack, useNavigation, useSearchParams } from "expo-router";
 import * as FileSystem from "expo-file-system";
 import TrackPlayer, { State } from "react-native-track-player";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { Audio } from "expo-av";
 
 const AudioFile = () => {
   const [playerState, setPlayerState] = useState<State>();
+  const [playbackState, setPlaybackState] = useState();
   const [isPlaying, setIsPlaying] = useState(false);
   const params = useSearchParams();
   const fileName = params.audioFile as string;
+  const soundObjectRef = useRef(new Audio.Sound()).current;
 
-  const addTrack = async () => {
-    await TrackPlayer.reset();
-    await TrackPlayer.add({
-      id: "1",
-      url: `${FileSystem.documentDirectory}${fileName}`,
-      title: "My Title",
-      album: "My Album",
-      artist: "Rohan Bhatia",
-      artwork: "https://picsum.photos/100",
-    });
+  const cleanUpSoundObject = async () => {
+    await soundObjectRef.unloadAsync();
+  };
+  useEffect(() => {
+    return () => {
+      cleanUpSoundObject();
+    };
+  }, []);
+  const onButtonPressed = async () => {
+    // const soundObject = new Audio.Sound();
+    setIsPlaying(true);
+    const status = await soundObjectRef.loadAsync(
+      {
+        uri: `${FileSystem.documentDirectory}${fileName}`,
+      },
+      { shouldPlay: true }
+    );
+    soundObjectRef.setOnPlaybackStatusUpdate((status) =>
+      setPlaybackState(status)
+    );
+    // await soundObject.setVolumeAsync(1);
+    // console.log("status", status);
+
+    // const x = await soundObject.playAsync();
+    // console.log("X", x);
+    //!! TrackPlayer Code below
+    // if (!isPlaying) {
+    //   TrackPlayer.play();
+    //   setIsPlaying(true);
+    // } else {
+    //   TrackPlayer.pause();
+    //   setIsPlaying(false);
+    // }
   };
 
   useEffect(() => {
-    const setupPlayer = async () => {
-      await addTrack();
-    };
-    setupPlayer();
-    return () => {
-      TrackPlayer.pause();
-    };
-  }, [fileName]);
-  // const getPlayerState = async () => {
-  //   const state = await TrackPlayer.getState();
-  //   setPlayerState(state);
-  // };
-  const onButtonPressed = () => {
-    if (!isPlaying) {
-      TrackPlayer.play();
-      setIsPlaying(true);
-    } else {
-      TrackPlayer.pause();
-      setIsPlaying(false);
-    }
-  };
-
+    console.log(playbackState);
+  }, [playbackState]);
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ title: fileName }} />
