@@ -15,3 +15,25 @@ export const formatBytes = (bytes: number) => {
   }
   return finalBytes;
 };
+
+export const formatSeconds = (
+  secondsIn: number,
+  type: "minimal" | "verbose"
+) => {
+  if (!secondsIn) return 0;
+  const d = Number(secondsIn);
+  const h = Math.floor(d / 3600);
+  const m = Math.floor((d % 3600) / 60);
+  const s = Math.floor((d % 3600) % 60);
+
+  if (type === "minimal") {
+    return `${h > 0 ? h + ":" : ""}${
+      m > 0 ? m.toString().padStart(2, "0") + ":" : ""
+    }${s.toString().padStart(2, "0")}`;
+  }
+
+  const hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
+  const mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
+  const sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
+  return hDisplay + mDisplay + sDisplay;
+};

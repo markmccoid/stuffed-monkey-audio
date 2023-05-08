@@ -156,3 +156,15 @@ export const FileMovieIcon = ({ size = 25, color, style }: Props) => {
 export const FileGeneralIcon = ({ size = 25, color, style }: Props) => {
   return <FontAwesome name="file" size={size} color={color} style={style} />;
 };
+
+export const CancelIcon = ({ size = 25, color, style }: Props) => {
+  return (
+    <MaterialIcons name="cancel" size={size} color={color} style={style} />
+  );
+};
+
+export const CloudDownloadIcon = ({ size = 25, color, style }: Props) => {
+  return (
+    <AntDesign name="clouddownload" size={size} color={color} style={style} />
+  );
+};

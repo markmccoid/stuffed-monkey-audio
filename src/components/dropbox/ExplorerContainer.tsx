@@ -5,26 +5,24 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
+  Pressable,
+  Dimensions,
 } from "react-native";
 import React from "react";
-import {
-  listDropboxFiles,
-  DropboxDir,
-  FileEntry,
-  downloadDropboxFile,
-  getDropboxFileLink,
-} from "../../utils/dropboxUtils";
+import { listDropboxFiles, DropboxDir } from "../../utils/dropboxUtils";
 import BrowserActionBar from "./ExplorerActionBar";
 import { Link } from "expo-router";
-import { FileAudioIcon, FolderClosedIcon } from "../common/svg/Icons";
-import { formatBytes } from "../../utils/formatUtils";
-import * as FileSystem from "expo-file-system";
+import { FolderClosedIcon } from "../common/svg/Icons";
+import { useTrackActions } from "../../store/store";
+import ExplorerFile from "./ExplorerFile";
 
 function filterAudioFiles(filesAndFolders: DropboxDir) {
   const files = filesAndFolders.files;
   const AUDIO_FORMATS = [
     "mp3",
     "mb4",
+    "m4a",
+    "m4b",
     "wav",
     "aiff",
     "aac",
@@ -38,25 +36,16 @@ function filterAudioFiles(filesAndFolders: DropboxDir) {
   return { folders: filesAndFolders.folders, files: newFiles };
 }
 
+const { height, width } = Dimensions.get("screen");
+
 const ExplorerContainer = () => {
   const [files, setFiles] = React.useState<DropboxDir>();
   const [currentPath, setCurrentPath] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
   const [isError, setIsError] = React.useState(undefined);
+  const [progress, setProgress] = React.useState(0);
+  const audioStoreActions = useTrackActions();
 
-  const testDownload = async (file: FileEntry) => {
-    setIsLoading(true);
-    const downloadLink = await getDropboxFileLink(file.path_lower);
-
-    if (file.name.includes("mp3") || file.name.includes("wav")) {
-      // "Clean" filename by only allowing upper/lower chars, digits, and underscores
-      const filename = file.name.replace(/[^\w.]/g, "_");
-      let documentDirectoryUri = FileSystem.documentDirectory + filename;
-      await FileSystem.downloadAsync(downloadLink, documentDirectoryUri);
-      console.log("DOWNLOAD and DONE SAVING", documentDirectoryUri);
-    }
-    setIsLoading(false);
-  };
   React.useEffect(() => {
     const getFiles = async () => {
       setIsLoading(true);
@@ -78,6 +67,9 @@ const ExplorerContainer = () => {
     setCurrentPath(nextPath);
   };
 
+  // React.useEffect(() => {
+  //   console.log("PROGRESS", progress);
+  // }, [progress]);
   if (isError) {
     return (
       <View>
@@ -91,7 +83,7 @@ const ExplorerContainer = () => {
     );
   }
   return (
-    <View>
+    <View className="border-2 border-blue-900 flex-1">
       <View style={{ zIndex: 5 }}>
         <BrowserActionBar
           currentPath={currentPath}
@@ -101,6 +93,7 @@ const ExplorerContainer = () => {
           }}
         />
       </View>
+
       {isLoading && (
         <View
           style={{
@@ -111,33 +104,38 @@ const ExplorerContainer = () => {
             alignItems: "center",
           }}
         >
-          <ActivityIndicator size="large" color="#ffffff" />
+          {!progress?.downloadProgress && (
+            <ActivityIndicator size="large" color="#ffffff" />
+          )}
         </View>
       )}
-      <ScrollView>
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 30 }}
+        // style={{ flex: 1 }}
+      >
         {files?.folders.map((folder) => {
           return (
-            <TouchableOpacity
-              onPress={() => onNavigateForward(folder.path_lower)}
-              key={folder.id}
-            >
-              <View className="p-3 border border-black flex-row items-center">
-                <FolderClosedIcon />
-                <Text className="ml-3 font-bold">{folder.name}</Text>
-              </View>
-            </TouchableOpacity>
+            <View key={folder.id} className="p-2 border-b-amber-700 border-b">
+              <TouchableOpacity
+                onPress={() => onNavigateForward(folder.path_lower)}
+                key={folder.id}
+              >
+                <View className="flex-row flex-grow items-center">
+                  <FolderClosedIcon color="#d97706" />
+                  <Text
+                    className="ml-3 flex-1 font-ssp_regular text-amber-950 text-base"
+                    numberOfLines={2}
+                    ellipsizeMode="tail"
+                  >
+                    {folder.name}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
           );
         })}
         {files?.files.map((file) => {
-          return (
-            <TouchableOpacity key={file.id} onPress={() => testDownload(file)}>
-              <View className="p-3 border border-red-700 flex-row items-center">
-                <FileAudioIcon />
-                <Text className="ml-3 text-red-700">{file.name}</Text>
-                <Text className="ml-3 font-bold">{formatBytes(file.size)}</Text>
-              </View>
-            </TouchableOpacity>
-          );
+          return <ExplorerFile key={file.id} file={file} />;
         })}
       </ScrollView>
     </View>

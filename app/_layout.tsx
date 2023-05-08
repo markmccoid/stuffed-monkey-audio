@@ -10,6 +10,18 @@ import Drawer from "expo-router/drawer";
 import { useEffect } from "react";
 import { useColorScheme } from "react-native";
 import AppPlayer from "../src/utils/AppPlayer";
+import { onInitialize } from "../src/store/store";
+import {
+  Lato_100Thin,
+  Lato_400Regular,
+  Lato_700Bold,
+} from "@expo-google-fonts/lato";
+import {
+  SourceSansPro_400Regular,
+  SourceSansPro_300Light,
+  SourceSansPro_600SemiBold,
+  SourceSansPro_700Bold,
+} from "@expo-google-fonts/source-sans-pro";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -25,6 +37,13 @@ export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     ...FontAwesome.font,
+    Lato_100Thin,
+    Lato_400Regular,
+    Lato_700Bold,
+    SourceSansPro_300Light,
+    SourceSansPro_400Regular,
+    SourceSansPro_600SemiBold,
+    SourceSansPro_700Bold,
   });
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
@@ -32,10 +51,11 @@ export default function RootLayout() {
     if (error) throw error;
   }, [error]);
   //--------
-  // AUDIO INIT
+  // Zustand Store and app initialization
   //--------
   useEffect(() => {
-    AppPlayer.initializePlayer();
+    console.log("running init 1");
+    onInitialize();
   }, []);
 
   return (

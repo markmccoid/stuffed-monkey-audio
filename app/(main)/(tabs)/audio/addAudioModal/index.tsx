@@ -7,7 +7,7 @@ import { colors } from "../../../../../src/constants/Colors";
 
 const AddAudioScreen = () => {
   const navigation = useNavigation();
-  console.log("GO BACK", navigation.getState());
+  // console.log("GO BACK", navigation.getState());
 
   return (
     <View style={{ margin: 0 }}>

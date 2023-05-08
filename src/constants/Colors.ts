@@ -24,4 +24,8 @@ export const colors = {
   menuBG: "#FCFCFA",
   dropboxBlue: "#007ee5",
   deleteRed: "#c70000",
+  amber600: "#d97706",
+  amber700: "#b45309",
+  amber900: "#78350f",
+  amber950: "#451a03",
 };
