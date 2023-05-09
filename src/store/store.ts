@@ -3,6 +3,8 @@ import uuid from "react-native-uuid";
 import { getAudioFileTags } from "../utils/audioUtils";
 import { loadFromAsyncStorage, saveToAsyncStorage } from "./data/asyncStorage";
 import { deleteFromFileSystem } from "./data/fileSystemAccess";
+import { Audio, InterruptionModeIOS } from "expo-av";
+
 export type AudioTrack = {
   id: string;
   // Full path to the file
@@ -82,8 +84,28 @@ export const useTracksStore = create<AudioState>((set, get) => ({
 
 export const useTrackActions = () => useTracksStore((state) => state.actions);
 
+//~- ====================================================
+//~- Current Playlist Playback
+//~- ====================================================
+type Playlist = {
+  toBeDetermined: string;
+};
+type PlaylistState = {
+  playbackObj?: Audio.Sound;
+  currentPlaylist?: Playlist;
+  currentTrack?: AudioTrack;
+  currentPosition?: number;
+};
+
+export const usePlaylistStore = create<PlaylistState>((set, get) => ({
+  playbackObj: undefined,
+  currentPlaylist: undefined,
+  currentTrack: undefined,
+  currentPosition: 0,
+}));
+
 /**
- *
+ * ON INITIALIZE
  */
 export const onInitialize = async () => {
   const tracks = await loadFromAsyncStorage("tracks");
@@ -91,5 +113,12 @@ export const onInitialize = async () => {
     useTracksStore.setState({ tracks });
   }
   console.log("store updates", useTracksStore.getState().tracks.length);
+  //-- Initialize expo-av Audio session to play in background
+  await Audio.setAudioModeAsync({
+    playsInSilentModeIOS: true,
+    interruptionModeIOS: InterruptionModeIOS.MixWithOthers,
+    staysActiveInBackground: true,
+  });
+
   return;
 };

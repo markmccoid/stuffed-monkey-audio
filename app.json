@@ -15,16 +15,6 @@
     "assetBundlePatterns": [
       "**/*"
     ],
-    "ios": {
-      "supportsTablet": false,
-      "bundleIdentifier": "com.markmccoid.stuffed-monkey-audio"
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
-    },
     "web": {
       "bundler": "metro",
       "favicon": "./assets/images/favicon.png"

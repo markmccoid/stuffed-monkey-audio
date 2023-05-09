@@ -37,6 +37,8 @@ export default function AudioMainScreen() {
         <Text>Modal</Text>
       </Link>
 
+      <Text style={styles.title}>Audio Files</Text>
+      <TrackContainer />
       {/* Shows files stored in system direcotry */}
       {/* <View style={{ borderWidth: 1, padding: 10, width: "100%" }}>
         {files.map((file) => (
@@ -48,8 +50,6 @@ export default function AudioMainScreen() {
           />
         ))}
       </View> */}
-      <Text style={styles.title}>Audio Files</Text>
-      <TrackContainer />
     </View>
   );
 }

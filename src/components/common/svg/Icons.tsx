@@ -130,6 +130,24 @@ export const MDHeartIcon = ({ size = 25, color, style }: Props) => {
 };
 
 //-- -----------------------------------
+//-- PLAYER Icons
+//-- -----------------------------------
+export const PlayIcon = ({ size = 25, color, style }: Props) => {
+  return <Feather name="play" color={color} size={size} style={style} />;
+};
+export const PauseIcon = ({ size = 25, color, style }: Props) => {
+  return <Feather name="pause" color={color} size={size} style={style} />;
+};
+export const NextIcon = ({ size = 25, color, style }: Props) => {
+  return (
+    <Feather name="skip-forward" color={color} size={size} style={style} />
+  );
+};
+export const BackIcon = ({ size = 25, color, style }: Props) => {
+  return <Feather name="skip-back" color={color} size={size} style={style} />;
+};
+
+//-- -----------------------------------
 //-- DROPBOX Icons
 //-- -----------------------------------
 export const DropboxIcon = ({ size = 25, color, style }: Props) => {

@@ -5,7 +5,6 @@ import ExplorerContainer from "../../../../../src/components/dropbox/ExplorerCon
 const ImportDropbox = () => {
   return (
     <View style={{ flex: 1 }}>
-      <Text>Import Dropbox</Text>
       <ExplorerContainer />
     </View>
   );

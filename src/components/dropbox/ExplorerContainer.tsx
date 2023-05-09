@@ -10,11 +10,12 @@ import {
 } from "react-native";
 import React from "react";
 import { listDropboxFiles, DropboxDir } from "../../utils/dropboxUtils";
-import BrowserActionBar from "./ExplorerActionBar";
+import ExplorerActionBar from "./ExplorerActionBar";
 import { Link } from "expo-router";
 import { FolderClosedIcon } from "../common/svg/Icons";
 import { useTrackActions } from "../../store/store";
 import ExplorerFile from "./ExplorerFile";
+import ExplorerFolder from "./ExplorerFolder";
 
 function filterAudioFiles(filesAndFolders: DropboxDir) {
   const files = filesAndFolders.files;
@@ -83,9 +84,9 @@ const ExplorerContainer = () => {
     );
   }
   return (
-    <View className="border-2 border-blue-900 flex-1">
+    <View className="flex-1">
       <View style={{ zIndex: 5 }}>
-        <BrowserActionBar
+        <ExplorerActionBar
           currentPath={currentPath}
           onHandleBack={() => {
             const newPath = goBackInPath(currentPath);
@@ -104,36 +105,20 @@ const ExplorerContainer = () => {
             alignItems: "center",
           }}
         >
-          {!progress?.downloadProgress && (
-            <ActivityIndicator size="large" color="#ffffff" />
-          )}
+          <ActivityIndicator size="large" color="#ffffff" />
         </View>
       )}
       <ScrollView
         contentContainerStyle={{ paddingBottom: 30 }}
         // style={{ flex: 1 }}
       >
-        {files?.folders.map((folder) => {
-          return (
-            <View key={folder.id} className="p-2 border-b-amber-700 border-b">
-              <TouchableOpacity
-                onPress={() => onNavigateForward(folder.path_lower)}
-                key={folder.id}
-              >
-                <View className="flex-row flex-grow items-center">
-                  <FolderClosedIcon color="#d97706" />
-                  <Text
-                    className="ml-3 flex-1 font-ssp_regular text-amber-950 text-base"
-                    numberOfLines={2}
-                    ellipsizeMode="tail"
-                  >
-                    {folder.name}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          );
-        })}
+        {files?.folders.map((folder) => (
+          <ExplorerFolder
+            key={folder.id}
+            folder={folder}
+            onNavigateForward={onNavigateForward}
+          />
+        ))}
         {files?.files.map((file) => {
           return <ExplorerFile key={file.id} file={file} />;
         })}

@@ -11,10 +11,10 @@ type Props = {
   currentPath: string;
   onHandleBack: () => void;
 };
-const BrowserActionBar = ({ currentPath, onHandleBack }: Props) => {
+const ExplorerActionBar = ({ currentPath, onHandleBack }: Props) => {
   return (
     <View className="flex flex-col">
-      <View className="flex flex-row items-center border border-red-600">
+      <View className="flex flex-row items-center ">
         <TouchableOpacity
           disabled={currentPath.length === 0}
           onPress={onHandleBack}
@@ -25,7 +25,7 @@ const BrowserActionBar = ({ currentPath, onHandleBack }: Props) => {
         <Text className="px-4 py-2 ">Favorites</Text>
       </View>
       <View>
-        <Text className="text-md px-2 pt-1 pb-2">
+        <Text className="text-sm font-ssp_regular text-amber-900 px-2 pt-1 pb-2">
           {currentPath.length === 0 ? "/" : currentPath}
         </Text>
       </View>
@@ -38,4 +38,4 @@ const styles = StyleSheet.create({
     padding: 5,
   },
 });
-export default BrowserActionBar;
+export default ExplorerActionBar;
