@@ -2,105 +2,77 @@ import { View, Text, StyleSheet } from "react-native";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { Audio } from "expo-av";
-import { AudioTrack, useTracksStore } from "../../../src/store/store";
+import {
+  AudioTrack,
+  usePlaylistStore,
+  useTracksStore,
+} from "../../../src/store/store";
 import { PlayIcon, PauseIcon } from "../common/svg/Icons";
-import Slider from "@react-native-community/slider";
+
+import TrackSlider from "./TrackSlider";
 
 type Props = {
   track: AudioTrack;
 };
+type PlaybackState = {
+  isLoaded: boolean;
+  playbackObj?: Audio.Sound;
+  positionSeconds?: number;
+  durationSeconds?: number;
+  isPlaying?: boolean;
+  isLooping?: boolean;
+  isMuted?: boolean;
+  rate?: number;
+  shouldCorrectPitch?: boolean;
+  volume?: number;
+};
 const TrackPlayerContainer = ({ track }: Props) => {
-  const [playerState, setPlayerState] = useState<State>();
-  const [playbackState, setPlaybackState] = useState();
-  const [isPlaying, setIsPlaying] = useState(false);
-  const soundObjectRef = useRef(new Audio.Sound()).current;
+  const soundActions = usePlaylistStore((state) => state.actions);
+  const isPlaying = usePlaylistStore((state) => state.playbackState.isPlaying);
+  const isLoaded = usePlaylistStore((state) => state.playbackState.isLoaded);
 
-  const [position, setPosition] = useState(0);
-
-  const [soundIsLoading, setSoundIsLoading] = useState(false);
-
-  const cleanUpSoundObject = async () => {
-    await soundObjectRef.unloadAsync();
-  };
-
+  //-- LOADS passed track sound
+  //-- and inits Store, but does not start playing
   useEffect(() => {
+    soundActions.loadSoundFile(track.fileURI);
     return () => {
-      cleanUpSoundObject();
+      soundActions.unloadSoundFile();
     };
   }, []);
 
-  useEffect(() => {
-    const updatePlaybackStatus = (status) => {
-      console.log("STATUS", status);
-      setPosition((status.positionMillis || 0) / 1000);
-    };
-    if (soundObjectRef) {
-      soundObjectRef.setOnPlaybackStatusUpdate(updatePlaybackStatus);
-    }
-  }, [soundObjectRef]);
-  const onButtonPressed = async () => {
-    console.log("SOUND IS LOADING", soundIsLoading);
-    console.log("FILE URI", track.fileURI);
-    if (soundIsLoading) return;
-    const currStatus = await soundObjectRef.getStatusAsync();
-    console.log("CURR STATUS", currStatus);
-    /**
-     * Two status's to deal with
-     * - isLoaded
-     * - isPlaying
-     * If NOT loaded, the "loadAsync"
-     * If loaded but NOT playing then resume
-     * IF loaded but Playing the pause
-     */
-    if (!currStatus.isLoaded) {
-      try {
-        setSoundIsLoading(true);
-        await soundObjectRef.loadAsync(
-          {
-            uri: track.fileURI,
-          },
-          { shouldPlay: true }
-        );
-        setIsPlaying(true);
-      } catch (e) {
-        console.log("Error Loading Sound", e);
-      } finally {
-        setSoundIsLoading(false);
-      }
-    } else if (currStatus.isPlaying) {
-      setIsPlaying(false);
-      await soundObjectRef.pauseAsync();
-    } else if (!currStatus.isPlaying) {
-      setIsPlaying(true);
-      await soundObjectRef.playAsync();
-    }
+  const play = async () => {
+    await soundActions.play();
   };
-
-  useEffect(() => {
-    console.log(playbackState);
-  }, [playbackState]);
+  const pause = async () => {
+    soundActions.pause();
+  };
 
   return (
     <View style={styles.container}>
       <Text>{track.filename}</Text>
-      <TouchableOpacity onPress={onButtonPressed} style={styles.actionButton}>
+      <TouchableOpacity
+        onPress={() => console.log("PLAY BUTTON")}
+        style={styles.actionButton}
+      >
         <View>{!isPlaying ? <PlayIcon /> : <PauseIcon />}</View>
       </TouchableOpacity>
-      <Text>{isPlaying ? "Pause" : "Play"}</Text>
-      <Slider
-        style={{ width: 200, height: 40 }}
-        minimumValue={0}
-        maximumValue={track.metadata?.durationSeconds}
-        minimumTrackTintColor="#FFFFFF"
-        maximumTrackTintColor="#000000"
-        value={position}
-      />
+      <View className="p-2 border border-amber-800">
+        <TouchableOpacity
+          onPress={isLoaded && isPlaying ? () => pause() : () => play()}
+        >
+          <Text>{isLoaded && isPlaying ? "Pause" : "Play"}</Text>
+        </TouchableOpacity>
+      </View>
+      <View className="">
+        <TrackSlider />
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    padding: 5,
     flexDirection: "column",
     justifyContent: "flex-start",
     alignItems: "flex-start",

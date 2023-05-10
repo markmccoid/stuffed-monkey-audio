@@ -1,6 +1,7 @@
 import * as FileSystem from "expo-file-system";
 import * as jsmediatags from "jsmediatags";
 import { TagType } from "jsmediatags/types";
+
 const base64 = require("base-64");
 import { AVPlaybackStatusSuccess, Audio } from "expo-av";
 import { AudioMetadata } from "../store/store";
@@ -20,6 +21,7 @@ export const getAudioFileTags = async (fileURI: string) => {
   };
   try {
     const tag = (await jsMediaAsync(workingURI)) as TagType;
+
     metadata = {
       title: tag.tags.title,
       artist: tag.tags.artist,
@@ -29,14 +31,20 @@ export const getAudioFileTags = async (fileURI: string) => {
       pictureURI: undefined,
     };
     if (tag.tags.picture) {
-      const pictureData = tag.tags.picture.data;
+      const { data, format } = tag.tags.picture;
+
       try {
-        const base64String = base64.encode(String.fromCharCode(...pictureData));
-        const uri = `data:${tag.tags.picture.format};base64,${base64String}`;
+        let base64StringStart = "";
+        for (let i = 0; i < data.length; i++) {
+          base64StringStart += String.fromCharCode(data[i]);
+        }
+        const base64String = base64.encode(base64StringStart);
+
+        const uri = `data:${format};base64,${base64String}`;
         metadata.pictureURI = uri;
         // updateBase64Image(uri);
       } catch (err) {
-        console.log("ERROR GETTING IMAE");
+        console.log("ERROR GETTING IMAGE", err);
       }
     }
   } catch (e) {
@@ -44,6 +52,22 @@ export const getAudioFileTags = async (fileURI: string) => {
   }
 
   return metadata;
+};
+
+//--=================================
+//-- BLOB Reader
+//--=================================
+// Define a function that reads the contents of a Blob as a data URL
+const readBlobAsDataURL = (blob) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+    reader.onloadend = () => {
+      const base64Data = reader.result.split(",")[1];
+      resolve(base64Data);
+    };
+    reader.onerror = reject;
+  });
 };
 
 //--=================================

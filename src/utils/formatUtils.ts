@@ -27,8 +27,8 @@ export const formatSeconds = (
   const s = Math.floor((d % 3600) % 60);
 
   if (type === "minimal") {
-    return `${h > 0 ? h + ":" : ""}${
-      m > 0 ? m.toString().padStart(2, "0") + ":" : ""
+    return `${h > 0 ? h + ":" : "00:"}${
+      m > 0 ? m.toString().padStart(2, "0") + ":" : "00:"
     }${s.toString().padStart(2, "0")}`;
   }
 

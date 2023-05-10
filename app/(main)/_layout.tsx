@@ -28,6 +28,7 @@ export default function DrawerLayout() {
       >
         <Drawer.Screen name="(tabs)" />
         <Drawer.Screen name="settings" />
+        <Drawer.Screen name="index" />
       </Drawer>
     );
   };

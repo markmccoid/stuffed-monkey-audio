@@ -22,6 +22,7 @@ import {
   SourceSansPro_600SemiBold,
   SourceSansPro_700Bold,
 } from "@expo-google-fonts/source-sans-pro";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export {
   // Catch any errors thrown by the Layout component.

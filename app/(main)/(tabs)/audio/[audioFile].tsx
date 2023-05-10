@@ -24,9 +24,7 @@ const AudioFile = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "column",
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
+    flex: 1,
   },
   actionButton: {
     paddingHorizontal: 5,

@@ -12,7 +12,7 @@ const TrackItem = ({ track }: Props) => {
 
   return (
     <View className="flex-row justify-between flex-1 mb-2 px-2 flex-grow border-b border-b-amber-700">
-      <Link href={`/audio/${track.id}`}>
+      <Link href={{ pathname: `/audio/${track.id}` }}>
         <Image
           style={styles.trackImage}
           source={{ uri: track.metadata?.pictureURI }}
