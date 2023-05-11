@@ -322,6 +322,7 @@ export type FileEntry = {
   size: number;
   is_downloadable: boolean;
   content_hash: string;
+  alreadyDownload?: boolean;
 };
 export type Entries = FolderEntry | FileEntry;
 export type ListOfFiles = {

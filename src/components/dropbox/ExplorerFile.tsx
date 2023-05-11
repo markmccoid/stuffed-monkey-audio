@@ -2,6 +2,7 @@ import { View, Text, Pressable, StyleSheet } from "react-native";
 import React, { useRef, useState } from "react";
 import { FileEntry, getDropboxFileLink } from "../../utils/dropboxUtils";
 import {
+  AsteriskIcon,
   CloseIcon,
   CloudDownloadIcon,
   FileAudioIcon,
@@ -9,7 +10,6 @@ import {
 import { formatBytes } from "../../utils/formatUtils";
 import {
   DownloadProgress,
-  downloadFileTest,
   downloadWithProgress,
 } from "../../store/data/fileSystemAccess";
 import { useTrackActions } from "../../store/store";
@@ -26,11 +26,13 @@ const ExplorerFile = ({ file }: Props) => {
   const [progress, setProgress] = useState<DownloadProgress>();
   const [isDownloading, setIsDownloading] = useState(false);
   const [stopped, setStopped] = useState(false);
+  const [isDownloaded, setIsDownloaded] = useState(file.alreadyDownload);
 
   const stopDownloadRef = useRef<() => Promise<DownloadPauseState>>();
   //~ --- stopDownload of file -----
   const stopDownload = async () => {
     setStopped(true);
+    // this ref has a function that will cancel the download
     stopDownloadRef?.current && stopDownloadRef.current();
   };
   //~ --- downloadFile function to download file while setting progress state --------------
@@ -56,8 +58,9 @@ const ExplorerFile = ({ file }: Props) => {
       setStopped(false);
       return;
     }
+    setIsDownloaded(true);
     // Add new Track to store
-    trackActions.addNewTrack(fileURI, file.name);
+    trackActions.addNewTrack(fileURI, file.name, file.path_lower);
   };
 
   return (
@@ -73,7 +76,7 @@ const ExplorerFile = ({ file }: Props) => {
       {/* <View className="border border-blue-800 overflow-hidden"> */}
 
       <Text
-        className="font-ssp_regular text-base overflow-hidden flex-1 text-amber-950"
+        className={`font-ssp_regular text-base overflow-hidden flex-1 text-amber-950`}
         numberOfLines={2}
         ellipsizeMode="tail"
       >
@@ -84,8 +87,15 @@ const ExplorerFile = ({ file }: Props) => {
         <Text className="ml-3 font-ssp_regular text-base text-amber-950 mr-1">
           {formatBytes(file.size)}
         </Text>
-        {!isDownloading && (
-          <Pressable onPress={() => downloadFile(file)}>
+        {isDownloaded && (
+          <AsteriskIcon
+            color="green"
+            size={20}
+            style={{ marginLeft: 2, marginRight: 2 }}
+          />
+        )}
+        {!isDownloading && !isDownloaded && (
+          <Pressable onPress={() => downloadFile(file)} disabled={isDownloaded}>
             <CloudDownloadIcon />
           </Pressable>
         )}

@@ -44,16 +44,22 @@ const ExplorerContainer = () => {
   const [currentPath, setCurrentPath] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
   const [isError, setIsError] = React.useState(undefined);
-  const [progress, setProgress] = React.useState(0);
-  const audioStoreActions = useTrackActions();
+  const trackActions = useTrackActions();
 
   React.useEffect(() => {
     const getFiles = async () => {
       setIsLoading(true);
       try {
         const files = await listDropboxFiles(currentPath);
-        const filteredFiles = filterAudioFiles(files);
-        setFiles(filteredFiles);
+        const filteredFoldersFiles = filterAudioFiles(files);
+        const taggedFiles = trackActions.isTrackDownloaded(
+          filteredFoldersFiles.files
+        );
+        const finalFolderFileList: DropboxDir = {
+          folders: filteredFoldersFiles.folders,
+          files: taggedFiles,
+        };
+        setFiles(finalFolderFileList);
       } catch (err) {
         console.log(err);
         setIsError(err.cause);
@@ -63,6 +69,7 @@ const ExplorerContainer = () => {
 
     getFiles();
   }, [currentPath]);
+
   const onNavigateForward = (nextPath: string) => {
     console.log("next", nextPath);
     setCurrentPath(nextPath);
@@ -128,6 +135,7 @@ const ExplorerContainer = () => {
 };
 
 export default ExplorerContainer;
+
 function goBackInPath(path: string, delimiter: string = "/") {
   const lastSlash = path.lastIndexOf(delimiter);
   if (lastSlash < 0) {

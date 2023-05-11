@@ -22,9 +22,13 @@ const TrackSlider = () => {
         minimumTrackTintColor="#FFFFFF"
         maximumTrackTintColor="#000000"
         value={positionSeconds}
-        onValueChange={(val) => soundActions.updatePosition(val, true)}
+        onValueChange={(val) =>
+          soundActions.updatePosition(Math.floor(val), true)
+        }
         onSlidingStart={() => soundActions.pause()}
-        onSlidingComplete={(val) => soundActions.updatePosition(val)}
+        onSlidingComplete={(val) =>
+          soundActions.updatePosition(Math.floor(val))
+        }
       />
       <Text>{formatSeconds(positionSeconds || 0, "minimal")}</Text>
     </View>

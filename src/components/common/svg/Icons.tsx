@@ -128,6 +128,11 @@ export const EmptyMDHeartIcon = ({ size = 25, color, style }: Props) => {
 export const MDHeartIcon = ({ size = 25, color, style }: Props) => {
   return <Ionicons name="ios-heart" color={color} size={size} style={style} />;
 };
+export const AsteriskIcon = ({ size = 25, color, style }: Props) => {
+  return (
+    <FontAwesome5 name="asterisk" color={color} size={size} style={style} />
+  );
+};
 
 //-- -----------------------------------
 //-- PLAYER Icons

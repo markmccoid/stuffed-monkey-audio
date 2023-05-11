@@ -4,6 +4,7 @@ import { getAudioFileTags } from "../utils/audioUtils";
 import { loadFromAsyncStorage, saveToAsyncStorage } from "./data/asyncStorage";
 import { deleteFromFileSystem } from "./data/fileSystemAccess";
 import { AVPlaybackStatus, Audio, InterruptionModeIOS } from "expo-av";
+import { FileEntry } from "../utils/dropboxUtils";
 
 export type AudioTrack = {
   id: string;
@@ -11,6 +12,7 @@ export type AudioTrack = {
   fileURI: string;
   filename: string;
   directory: string;
+  sourceLocation: string;
   metadata?: AudioMetadata;
 };
 export type AudioMetadata = {
@@ -29,17 +31,19 @@ type AudioState = {
     addNewTrack: (
       fileURI: string,
       filename: string,
+      sourceLocation: string,
       directory?: string
     ) => void;
     // given passed id of audioFile, remove it from list AND Delete it from FileSystem storage
     removeTrack: (id: string) => void;
+    isTrackDownloaded: (sourceLocation: FileEntry[]) => FileEntry[];
   };
 };
 
 export const useTracksStore = create<AudioState>((set, get) => ({
   tracks: [],
   actions: {
-    addNewTrack: async (fileURI, filename, directory = "") => {
+    addNewTrack: async (fileURI, filename, sourceLocation, directory = "") => {
       // Get metadata for passed audio file
       const tags = await getAudioFileTags(fileURI);
 
@@ -49,6 +53,7 @@ export const useTracksStore = create<AudioState>((set, get) => ({
         fileURI,
         directory,
         filename,
+        sourceLocation,
         metadata: { ...tags },
       };
       // Right now we do NOT allow any duplicate files (dir/filename)
@@ -59,6 +64,7 @@ export const useTracksStore = create<AudioState>((set, get) => ({
       // Add new track to current list
       const newAudioFileList = [...filteredList, newAudioFile];
       set({ tracks: newAudioFileList });
+
       // set((state) => ({
       //   ...state,
       //   audioFiles: [...state.audioFiles, newAudioFile],
@@ -79,6 +85,18 @@ export const useTracksStore = create<AudioState>((set, get) => ({
       const newTracks = get().tracks.filter((el) => el.id !== id);
       await saveToAsyncStorage("tracks", newTracks);
       set((state) => ({ ...state, tracks: newTracks }));
+    },
+    isTrackDownloaded: (sourceLocation) => {
+      const sourceArray = get().tracks.map((el) => el.sourceLocation);
+      let taggedFiles = [];
+      if (Array.isArray(sourceLocation)) {
+        for (const source of sourceLocation) {
+          const isDownloaded = sourceArray.includes(source.path_lower);
+          taggedFiles.push({ ...source, alreadyDownload: isDownloaded });
+        }
+      }
+
+      return taggedFiles;
     },
   },
 }));
