@@ -1,16 +1,16 @@
 import { View, Text, Dimensions } from "react-native";
 import React from "react";
 import Slider from "@react-native-community/slider";
-import { usePlaylistStore } from "../../store/store";
+import { usePlaybackStore } from "../../store/store";
 const { width, height } = Dimensions.get("window");
 import { formatSeconds } from "../../utils/formatUtils";
 
 const TrackSlider = () => {
-  const soundActions = usePlaylistStore((state) => state.actions);
-  const { isPlaying, isLoaded, durationSeconds } = usePlaylistStore(
+  const soundActions = usePlaybackStore((state) => state.actions);
+  const { isPlaying, isLoaded, durationSeconds } = usePlaybackStore(
     (state) => state.playbackState
   );
-  const positionSeconds = usePlaylistStore((state) => state.currentPosition);
+  const positionSeconds = usePlaybackStore((state) => state.currentPosition);
 
   console.log(positionSeconds);
   return (

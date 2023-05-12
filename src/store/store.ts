@@ -13,6 +13,7 @@ export type AudioTrack = {
   filename: string;
   directory: string;
   sourceLocation: string;
+  currentPosition: number;
   metadata?: AudioMetadata;
 };
 export type AudioMetadata = {
@@ -25,6 +26,7 @@ export type AudioMetadata = {
 };
 type AudioState = {
   tracks: AudioTrack[];
+  playlists: Playlist[];
   actions: {
     // given the audio file location in storage, look up metadata and create
     // record in AudioState.audioFiles store array
@@ -32,18 +34,32 @@ type AudioState = {
       fileURI: string,
       filename: string,
       sourceLocation: string,
+      playlistId?: string,
       directory?: string
     ) => void;
     // given passed id of audioFile, remove it from list AND Delete it from FileSystem storage
     removeTrack: (id: string) => void;
-    isTrackDownloaded: (sourceLocation: FileEntry[]) => FileEntry[];
+    // Will take an array of files (FileEntry[]) and see if that track has already been downloaded
+    // to the "tracks" array.  Returns the same array with a "alreadyDownload" key set to true or false
+    isTrackDownloaded: (tracksToCheck: FileEntry[]) => FileEntry[];
+    // creates playlist with the passed name and returns the playlistId
+    addNewPlaylist: (title: string, author?: string) => Promise<string>;
+    // Add track(s) to playlist ID
+    addTracksToPlaylist: (playlistId: string, trackIds: string[]) => void;
   };
 };
 
 export const useTracksStore = create<AudioState>((set, get) => ({
   tracks: [],
+  playlists: [],
   actions: {
-    addNewTrack: async (fileURI, filename, sourceLocation, directory = "") => {
+    addNewTrack: async (
+      fileURI,
+      filename,
+      sourceLocation,
+      playlistId = undefined,
+      directory = ""
+    ) => {
       // Get metadata for passed audio file
       const tags = await getAudioFileTags(fileURI);
 
@@ -54,6 +70,7 @@ export const useTracksStore = create<AudioState>((set, get) => ({
         directory,
         filename,
         sourceLocation,
+        currentPosition: 0,
         metadata: { ...tags },
       };
       // Right now we do NOT allow any duplicate files (dir/filename)
@@ -61,14 +78,28 @@ export const useTracksStore = create<AudioState>((set, get) => ({
       // it has already been saved and that is fine.
       const filteredList = get().tracks.filter((el) => el.id !== id);
 
-      // Add new track to current list
+      // Add the new track to current track list
       const newAudioFileList = [...filteredList, newAudioFile];
       set({ tracks: newAudioFileList });
 
-      // set((state) => ({
-      //   ...state,
-      //   audioFiles: [...state.audioFiles, newAudioFile],
-      // }));
+      //! -- When a new track is added, we need to get the title and author
+      //!    information.  This will be our Playlist name
+      /**
+       * PLAYLIST
+       *  - id - uuid
+       *  - title
+       *  - author
+       *  - tracks: []
+       *  - currentTrack - trackId
+       */
+      // If no playlist ID passed, then assume single download and create new playlist
+      // and add track
+      if (!playlistId) {
+        const plTitle = newAudioFile.metadata?.title || newAudioFile.filename;
+        const plAuthor = newAudioFile.metadata?.artist || "Unknown";
+        const playlistId = get().actions.addNewPlaylist(plTitle, plAuthor);
+      }
+
       await saveToAsyncStorage("tracks", newAudioFileList);
     },
     removeTrack: async (id) => {
@@ -86,17 +117,42 @@ export const useTracksStore = create<AudioState>((set, get) => ({
       await saveToAsyncStorage("tracks", newTracks);
       set((state) => ({ ...state, tracks: newTracks }));
     },
-    isTrackDownloaded: (sourceLocation) => {
+    isTrackDownloaded: (tracksToCheck) => {
       const sourceArray = get().tracks.map((el) => el.sourceLocation);
       let taggedFiles = [];
-      if (Array.isArray(sourceLocation)) {
-        for (const source of sourceLocation) {
+      if (Array.isArray(tracksToCheck)) {
+        for (const source of tracksToCheck) {
           const isDownloaded = sourceArray.includes(source.path_lower);
           taggedFiles.push({ ...source, alreadyDownload: isDownloaded });
         }
       }
 
       return taggedFiles;
+    },
+    addNewPlaylist: async (title, author = "Unknown") => {
+      // Create new id
+      const id = uuid.v4() as string;
+      const newPlaylist: Playlist = {
+        id,
+        title,
+        author,
+      };
+      const newPlaylistArray = [newPlaylist, ...get().playlists];
+      set({ playlists: newPlaylistArray });
+      await saveToAsyncStorage("playlists", newPlaylistArray);
+      return id;
+    },
+    addTracksToPlaylist: (playlistId, tracks) => {
+      const playlists = get().playlists;
+      for (let playlist of playlists) {
+        if (playlist.id === playlistId) {
+          playlist.trackIds = playlist.trackIds
+            ? [...playlist.trackIds, ...tracks]
+            : tracks;
+          // Once we find our playlist, exit
+          break;
+        }
+      }
     },
   },
 }));
@@ -107,7 +163,11 @@ export const useTrackActions = () => useTracksStore((state) => state.actions);
 //~- Current Playlist Playback
 //~- ====================================================
 type Playlist = {
-  toBeDetermined: string;
+  id: string;
+  title: string;
+  author: string;
+  trackIds?: string[];
+  currentTrackId?: string;
 };
 
 type PlaybackState = {
@@ -123,7 +183,7 @@ type PlaybackState = {
   volume?: number;
 };
 
-type PlaylistState = {
+type PlaybackStoreState = {
   playbackObj?: Audio.Sound;
   playbackState: PlaybackState;
   playbackError?: string;
@@ -140,7 +200,7 @@ type PlaylistState = {
     unloadSoundFile: () => void;
   };
 };
-export const usePlaylistStore = create<PlaylistState>((set, get) => ({
+export const usePlaybackStore = create<PlaybackStoreState>((set, get) => ({
   playbackObj: undefined,
   playbackState: { isLoaded: false },
   playbackError: undefined,
@@ -195,16 +255,16 @@ export const usePlaylistStore = create<PlaylistState>((set, get) => ({
 //~ -----------
 function handlePlaybackState(sound: Audio.Sound, status: AVPlaybackStatus) {
   if (!status.isLoaded) {
-    usePlaylistStore.setState((state) => ({
+    usePlaybackStore.setState((state) => ({
       playbackState: { isLoaded: false },
     }));
-    usePlaylistStore.setState((state) => ({ playbackError: status.error }));
+    usePlaybackStore.setState((state) => ({ playbackError: status.error }));
     return;
   }
   const durationSeconds = status?.durationMillis
     ? status.durationMillis / 1000
     : 0;
-  usePlaylistStore.setState((state) => ({
+  usePlaybackStore.setState((state) => ({
     currentPosition: status.positionMillis / 1000,
     playbackState: {
       isLoaded: status.isLoaded,
@@ -226,10 +286,15 @@ function handlePlaybackState(sound: Audio.Sound, status: AVPlaybackStatus) {
  */
 export const onInitialize = async () => {
   const tracks = await loadFromAsyncStorage("tracks");
-  if (tracks) {
-    useTracksStore.setState({ tracks });
-  }
-  console.log("store updates", useTracksStore.getState().tracks.length);
+  const playlists = await loadFromAsyncStorage("playlists");
+
+  useTracksStore.setState({ tracks: tracks || [], playlists: playlists || [] });
+
+  console.log("store updates Tracks", useTracksStore.getState().tracks.length);
+  console.log(
+    "store updates Playlists",
+    useTracksStore.getState().playlists.length
+  );
   //-- Initialize expo-av Audio session to play in background
   await Audio.setAudioModeAsync({
     playsInSilentModeIOS: true,

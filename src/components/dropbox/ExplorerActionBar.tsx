@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import React from "react";
+import { CloudDownloadIcon } from "../common/svg/Icons";
 
 type Props = {
   currentPath: string;
@@ -14,15 +15,24 @@ type Props = {
 const ExplorerActionBar = ({ currentPath, onHandleBack }: Props) => {
   return (
     <View className="flex flex-col">
-      <View className="flex flex-row items-center ">
+      <View className="flex flex-row items-center justify-between mr-2">
+        <View className="flex-row">
+          <TouchableOpacity
+            disabled={currentPath.length === 0}
+            onPress={onHandleBack}
+            className="border border-black"
+          >
+            <Text className="px-4 py-2">Back</Text>
+          </TouchableOpacity>
+          <Text className="px-4 py-2 ">Favorites</Text>
+        </View>
         <TouchableOpacity
-          disabled={currentPath.length === 0}
-          onPress={onHandleBack}
-          className="border border-black"
+          className="flex-row items-center space-x-1 border border-amber-900 px-2 py-1 rounded-lg"
+          onPress={() => console.log("CURR PATH", currentPath)}
         >
-          <Text className="px-4 py-2">Back</Text>
+          <CloudDownloadIcon />
+          <Text>All</Text>
         </TouchableOpacity>
-        <Text className="px-4 py-2 ">Favorites</Text>
       </View>
       <View>
         <Text className="text-sm font-ssp_regular text-amber-900 px-2 pt-1 pb-2">

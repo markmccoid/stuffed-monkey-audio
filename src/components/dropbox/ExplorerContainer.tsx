@@ -41,6 +41,7 @@ const { height, width } = Dimensions.get("screen");
 
 const ExplorerContainer = () => {
   const [files, setFiles] = React.useState<DropboxDir>();
+  const [downloadAll, setDownloadAll] = React.useState(false);
   const [currentPath, setCurrentPath] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
   const [isError, setIsError] = React.useState(undefined);
@@ -66,18 +67,22 @@ const ExplorerContainer = () => {
       }
       setIsLoading(false);
     };
-
     getFiles();
   }, [currentPath]);
 
   const onNavigateForward = (nextPath: string) => {
-    console.log("next", nextPath);
     setCurrentPath(nextPath);
   };
 
-  // React.useEffect(() => {
-  //   console.log("PROGRESS", progress);
-  // }, [progress]);
+  const onDownloadAll = (path: string) => {
+    // path WILL equal currentPath and we can just assume
+    // the current "files" state variable has the data we need
+    // When this function is called, we will set a download state
+    // variable, and upon rerender, pass that to each file, which will trigger
+    // it to download.
+    setDownloadAll(true);
+  };
+
   if (isError) {
     return (
       <View>

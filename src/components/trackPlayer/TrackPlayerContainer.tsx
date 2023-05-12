@@ -4,7 +4,7 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import { Audio } from "expo-av";
 import {
   AudioTrack,
-  usePlaylistStore,
+  usePlaybackStore,
   useTracksStore,
 } from "../../../src/store/store";
 import { PlayIcon, PauseIcon } from "../common/svg/Icons";
@@ -27,9 +27,9 @@ type PlaybackState = {
   volume?: number;
 };
 const TrackPlayerContainer = ({ track }: Props) => {
-  const soundActions = usePlaylistStore((state) => state.actions);
-  const isPlaying = usePlaylistStore((state) => state.playbackState.isPlaying);
-  const isLoaded = usePlaylistStore((state) => state.playbackState.isLoaded);
+  const soundActions = usePlaybackStore((state) => state.actions);
+  const isPlaying = usePlaybackStore((state) => state.playbackState.isPlaying);
+  const isLoaded = usePlaybackStore((state) => state.playbackState.isLoaded);
 
   //-- LOADS passed track sound
   //-- and inits Store, but does not start playing
