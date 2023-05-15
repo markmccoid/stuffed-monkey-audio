@@ -35,7 +35,7 @@ export default function AudioListStack() {
           },
         }}
       />
-      <Stack.Screen name="[audioFile]" />
+      <Stack.Screen name="[playlistId]" />
       <Stack.Screen
         name="addAudioModal"
         options={{ presentation: "modal", headerShown: false }}

@@ -134,6 +134,10 @@ export const AsteriskIcon = ({ size = 25, color, style }: Props) => {
   );
 };
 
+export const BookIcon = ({ size = 25, color, style }: Props) => {
+  return <Feather name="book" color={color} size={size} style={style} />;
+};
+
 //-- -----------------------------------
 //-- PLAYER Icons
 //-- -----------------------------------

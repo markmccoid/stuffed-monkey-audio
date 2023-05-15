@@ -4,14 +4,14 @@ import { drawerLeftMenu } from "../../../../src/components/navHelpers/headerHelp
 // import { FilterIcon } from "../../../../utils/IconComponents";
 // import { touchablePress } from "../../../../utils/pressableStyles";
 
-export default function TagsLayout() {
+export default function AddBooksLayout() {
   const navigation = useNavigation();
   return (
     <Stack screenOptions={{ headerShown: true }}>
       <Stack.Screen
         name="index"
         options={{
-          title: "Tags",
+          title: "Add Books",
           headerLeft: () => drawerLeftMenu(navigation, "stack"),
           headerRight: () => {
             return (
@@ -20,6 +20,13 @@ export default function TagsLayout() {
               </TouchableOpacity>
             );
           },
+        }}
+      />
+      <Stack.Screen
+        name="importDropbox"
+        options={{
+          presentation: "card",
+          title: "Dropbox",
         }}
       />
     </Stack>

@@ -9,10 +9,10 @@ import {
   Dimensions,
 } from "react-native";
 import React from "react";
+import uuid from "react-native-uuid";
+import { Link } from "expo-router";
 import { listDropboxFiles, DropboxDir } from "../../utils/dropboxUtils";
 import ExplorerActionBar from "./ExplorerActionBar";
-import { Link } from "expo-router";
-import { FolderClosedIcon } from "../common/svg/Icons";
 import { useTrackActions } from "../../store/store";
 import ExplorerFile from "./ExplorerFile";
 import ExplorerFolder from "./ExplorerFolder";
@@ -41,7 +41,7 @@ const { height, width } = Dimensions.get("screen");
 
 const ExplorerContainer = () => {
   const [files, setFiles] = React.useState<DropboxDir>();
-  const [downloadAll, setDownloadAll] = React.useState(false);
+  const [downloadAllId, setDownloadAllId] = React.useState<string>();
   const [currentPath, setCurrentPath] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
   const [isError, setIsError] = React.useState(undefined);
@@ -74,13 +74,14 @@ const ExplorerContainer = () => {
     setCurrentPath(nextPath);
   };
 
-  const onDownloadAll = (path: string) => {
+  const onDownloadAll = () => {
     // path WILL equal currentPath and we can just assume
     // the current "files" state variable has the data we need
     // When this function is called, we will set a download state
     // variable, and upon rerender, pass that to each file, which will trigger
     // it to download.
-    setDownloadAll(true);
+    const playlistId = uuid.v4() as string;
+    setDownloadAllId(playlistId);
   };
 
   if (isError) {
@@ -104,6 +105,7 @@ const ExplorerContainer = () => {
             const newPath = goBackInPath(currentPath);
             setCurrentPath(newPath);
           }}
+          handleDownloadAll={onDownloadAll}
         />
       </View>
 
@@ -132,7 +134,13 @@ const ExplorerContainer = () => {
           />
         ))}
         {files?.files.map((file) => {
-          return <ExplorerFile key={file.id} file={file} />;
+          return (
+            <ExplorerFile
+              key={file.id}
+              file={file}
+              playlistId={downloadAllId}
+            />
+          );
         })}
       </ScrollView>
     </View>

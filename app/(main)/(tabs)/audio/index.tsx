@@ -11,12 +11,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 const base64 = require("base-64");
 
 import { readFileSystemDir } from "../../../../src/store/data/fileSystemAccess";
-import TrackContainer from "../../../../src/components/tracks/TrackContainer";
+import PlaylistContainer from "../../../../src/components/playlists/PlaylistContainer";
 
 import {
   BottomSheetModal,
   BottomSheetModalProvider,
 } from "@gorhom/bottom-sheet";
+import AudioLink from "../../../../src/components/playlists/AudioLink";
 
 export default function AudioMainScreen() {
   const [files, setFiles] = useState([]);
@@ -60,9 +61,9 @@ export default function AudioMainScreen() {
           color="black"
         />
         <Text style={styles.title}>Audio Files</Text>
-        <TrackContainer />
+        <PlaylistContainer />
         {/* Shows files stored in system direcotry */}
-        {/* <View style={{ borderWidth: 1, padding: 10, width: "100%" }}>
+        <View style={{ borderWidth: 1, padding: 10, width: "100%" }}>
           {files.map((file) => (
             <AudioLink
               key={file}
@@ -71,7 +72,7 @@ export default function AudioMainScreen() {
               setFiles={setFiles}
             />
           ))}
-        </View> */}
+        </View>
       </View>
       <BottomSheetModal
         ref={bottomSheetModalRef}

@@ -5,7 +5,7 @@ import { Pressable, useColorScheme } from "react-native";
 import Colors from "../../../src/constants/Colors";
 import { drawerLeftMenu } from "../../../src/components/navHelpers/headerHelpers";
 import Headphone from "../../../src/components/common/svg/Headphones";
-import { TagIcon } from "../../../src/components/common/svg/Icons";
+import { BookIcon, TagIcon } from "../../../src/components/common/svg/Icons";
 
 /**
  * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
@@ -45,6 +45,13 @@ export default function TabLayout() {
         options={{
           title: "Tags",
           tabBarIcon: ({ color }) => <TagIcon size={25} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="addBooks"
+        options={{
+          title: "Add Books",
+          tabBarIcon: ({ color }) => <BookIcon size={25} color={color} />,
         }}
       />
     </Tabs>

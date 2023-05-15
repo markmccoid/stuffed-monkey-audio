@@ -11,8 +11,13 @@ import { CloudDownloadIcon } from "../common/svg/Icons";
 type Props = {
   currentPath: string;
   onHandleBack: () => void;
+  handleDownloadAll: () => void;
 };
-const ExplorerActionBar = ({ currentPath, onHandleBack }: Props) => {
+const ExplorerActionBar = ({
+  currentPath,
+  onHandleBack,
+  handleDownloadAll,
+}: Props) => {
   return (
     <View className="flex flex-col">
       <View className="flex flex-row items-center justify-between mr-2">
@@ -28,7 +33,7 @@ const ExplorerActionBar = ({ currentPath, onHandleBack }: Props) => {
         </View>
         <TouchableOpacity
           className="flex-row items-center space-x-1 border border-amber-900 px-2 py-1 rounded-lg"
-          onPress={() => console.log("CURR PATH", currentPath)}
+          onPress={handleDownloadAll}
         >
           <CloudDownloadIcon />
           <Text>All</Text>

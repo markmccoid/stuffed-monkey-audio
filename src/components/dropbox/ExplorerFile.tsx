@@ -1,5 +1,5 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FileEntry, getDropboxFileLink } from "../../utils/dropboxUtils";
 import {
   AsteriskIcon,
@@ -20,8 +20,9 @@ import { colors } from "../../constants/Colors";
 
 type Props = {
   file: FileEntry;
+  playlistId?: string;
 };
-const ExplorerFile = ({ file }: Props) => {
+const ExplorerFile = ({ file, playlistId }: Props) => {
   const trackActions = useTrackActions();
   const [progress, setProgress] = useState<DownloadProgress>();
   const [isDownloading, setIsDownloading] = useState(false);
@@ -29,6 +30,15 @@ const ExplorerFile = ({ file }: Props) => {
   const [isDownloaded, setIsDownloaded] = useState(file.alreadyDownload);
 
   const stopDownloadRef = useRef<() => Promise<DownloadPauseState>>();
+  useEffect(() => {
+    if (playlistId) {
+      if (!file.alreadyDownload) {
+        downloadFile(file);
+      }
+    }
+  }, [playlistId]);
+  //~ --- Download All Trigger -----
+  const downloadAll = () => {};
   //~ --- stopDownload of file -----
   const stopDownload = async () => {
     setStopped(true);
@@ -60,7 +70,7 @@ const ExplorerFile = ({ file }: Props) => {
     }
     setIsDownloaded(true);
     // Add new Track to store
-    trackActions.addNewTrack(fileURI, file.name, file.path_lower);
+    trackActions.addNewTrack(fileURI, file.name, file.path_lower, playlistId);
   };
 
   return (

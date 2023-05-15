@@ -26,30 +26,34 @@ type PlaybackState = {
   shouldCorrectPitch?: boolean;
   volume?: number;
 };
-const TrackPlayerContainer = ({ track }: Props) => {
-  const soundActions = usePlaybackStore((state) => state.actions);
+const TrackPlayerContainer = () => {
+  const playbackActions = usePlaybackStore((state) => state.actions);
+  const track = usePlaybackStore((state) => state.currentTrack);
   const isPlaying = usePlaybackStore((state) => state.playbackState.isPlaying);
   const isLoaded = usePlaybackStore((state) => state.playbackState.isLoaded);
 
+  // const isPlaying = false;
+  // const isLoaded = true;
+  // const track = {};
   //-- LOADS passed track sound
   //-- and inits Store, but does not start playing
-  useEffect(() => {
-    soundActions.loadSoundFile(track.fileURI);
-    return () => {
-      soundActions.unloadSoundFile();
-    };
-  }, []);
+  // useEffect(() => {
+  //   playbackActions.loadSoundFile(track.fileURI);
+  //   return () => {
+  //     soundActions.unloadSoundFile();
+  //   };
+  // }, []);
 
   const play = async () => {
-    await soundActions.play();
+    await playbackActions.play();
   };
   const pause = async () => {
-    soundActions.pause();
+    playbackActions.pause();
   };
 
   return (
     <View style={styles.container}>
-      <Text>{track.filename}</Text>
+      <Text>{track?.metadata?.title}</Text>
       <TouchableOpacity
         onPress={() => console.log("PLAY BUTTON")}
         style={styles.actionButton}
