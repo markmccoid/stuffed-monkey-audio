@@ -30,9 +30,11 @@ const ExplorerFile = ({ file, playlistId }: Props) => {
   const [isDownloaded, setIsDownloaded] = useState(file.alreadyDownload);
 
   const stopDownloadRef = useRef<() => Promise<DownloadPauseState>>();
+
   useEffect(() => {
     if (playlistId) {
-      if (!file.alreadyDownload) {
+      if (!isDownloaded) {
+        console.log("STARTING DL ALL", file.alreadyDownload);
         downloadFile(file);
       }
     }

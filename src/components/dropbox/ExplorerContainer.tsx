@@ -50,6 +50,7 @@ const ExplorerContainer = () => {
   React.useEffect(() => {
     const getFiles = async () => {
       setIsLoading(true);
+      setDownloadAllId(undefined);
       try {
         const files = await listDropboxFiles(currentPath);
         const filteredFoldersFiles = filterAudioFiles(files);

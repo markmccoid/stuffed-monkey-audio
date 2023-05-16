@@ -63,7 +63,7 @@ export default function AudioMainScreen() {
         <Text style={styles.title}>Audio Files</Text>
         <PlaylistContainer />
         {/* Shows files stored in system direcotry */}
-        <View style={{ borderWidth: 1, padding: 10, width: "100%" }}>
+        {/* <View style={{ borderWidth: 1, padding: 10, width: "100%" }}>
           {files.map((file) => (
             <AudioLink
               key={file}
@@ -72,7 +72,7 @@ export default function AudioMainScreen() {
               setFiles={setFiles}
             />
           ))}
-        </View>
+        </View> */}
       </View>
       <BottomSheetModal
         ref={bottomSheetModalRef}

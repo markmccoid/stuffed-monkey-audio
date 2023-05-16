@@ -1,11 +1,16 @@
 import { create } from "zustand";
 import uuid from "react-native-uuid";
 import { getAudioFileTags } from "../utils/audioUtils";
-import { loadFromAsyncStorage, saveToAsyncStorage } from "./data/asyncStorage";
+import {
+  loadFromAsyncStorage,
+  removeFromAsyncStorage,
+  saveToAsyncStorage,
+} from "./data/asyncStorage";
 import { deleteFromFileSystem } from "./data/fileSystemAccess";
 import { AVPlaybackStatus, Audio, InterruptionModeIOS } from "expo-av";
 import { FileEntry } from "../utils/dropboxUtils";
 import { analyzePlaylistTracks } from "./storeUtils";
+import { sortBy } from "lodash";
 const defaultImage = require("../../assets/images/splash.png");
 
 export type Playlist = {
@@ -68,6 +73,7 @@ type AudioState = {
     removePlaylist: (playlistId: string, removeAllTracks?: boolean) => void;
     getPlaylist: (playlistId: string) => Playlist | undefined;
     getTrack: (trackId: string) => AudioTrack | undefined;
+    clearAll: () => Promise<void>;
   };
 };
 
@@ -147,14 +153,13 @@ export const useTracksStore = create<AudioState>((set, get) => ({
         // store trackToDelete's info
         const trackToDelete = get().tracks.find((el) => el.id === id);
         // Delete from store
-        newTracks = get().tracks.filter((el) => el.id !== id);
+        newTracks = newTracks.filter((el) => el.id !== id);
         // return a promise
         return await deleteFromFileSystem(trackToDelete?.fileURI);
       });
       await Promise.all(deletePromises);
-
+      await saveToAsyncStorage("tracks", newTracks);
       set((state) => ({ ...state, tracks: newTracks }));
-      return await saveToAsyncStorage("tracks", newTracks);
     },
     isTrackDownloaded: (tracksToCheck) => {
       const sourceArray = get().tracks.map((el) => el.sourceLocation);
@@ -169,9 +174,14 @@ export const useTracksStore = create<AudioState>((set, get) => ({
       return taggedFiles;
     },
     addNewPlaylist: async (name, author = "Unknown", playlistId) => {
-      if (playlistId) return playlistId;
-
       const playlists = [...get().playlists];
+      // If playlist ID is passed, check to see if the playlist exists
+      if (playlistId) {
+        if (playlists.findIndex((el) => el.id === playlistId) !== -1) {
+          return playlistId;
+        }
+      }
+
       // the "name" passed will be the album of the track that is going to be added
       // Check all of the existing playlists to see if one has the same name
       // If so, then return that id otherwise create a new playlist and return that id
@@ -180,8 +190,9 @@ export const useTracksStore = create<AudioState>((set, get) => ({
           return playlist.id;
         }
       }
-      // No existing playlist found, create a new one
-      const id = uuid.v4() as string;
+      // No existing playlist found, create a new one based either on
+      // the passed in playlistId OR if not passed, create a new id
+      const id = playlistId || (uuid.v4() as string);
       const newPlaylist: Playlist = {
         id,
         name,
@@ -199,17 +210,21 @@ export const useTracksStore = create<AudioState>((set, get) => ({
       const playlists = [...get().playlists];
       const storedTracks = [...get().tracks];
 
+      // console.log("ADD TRACK TO PL", playlistId, tracks);
       for (let playlist of playlists) {
         if (playlist.id === playlistId) {
+          // Take the tracks being added and merge them with existing tracks
+          // in playlist.  Get rid of dups.
+          const uniqueTracksPlaylist = [
+            ...new Set([...tracks, ...(playlist.trackIds || [])]),
+          ];
           const { images, totalDuration } = analyzePlaylistTracks(
             storedTracks,
-            playlist.trackIds || []
+            uniqueTracksPlaylist
           );
           playlist.imageURI = images[0];
           playlist.totalDurationSeconds = totalDuration;
-          playlist.trackIds = playlist.trackIds
-            ? [...playlist.trackIds, ...tracks]
-            : tracks;
+          playlist.trackIds = sortBy(uniqueTracksPlaylist);
           // Once we find our playlist, exit
           break;
         }
@@ -239,6 +254,11 @@ export const useTracksStore = create<AudioState>((set, get) => ({
     },
     getTrack: (trackId) => {
       return get().tracks.find((el) => el.id === trackId);
+    },
+    clearAll: async () => {
+      set({ tracks: [], playlists: [] });
+      await removeFromAsyncStorage("tracks");
+      await removeFromAsyncStorage("playlists");
     },
   },
 }));
