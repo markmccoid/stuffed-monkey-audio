@@ -155,6 +155,19 @@ export const NextIcon = ({ size = 25, color, style }: Props) => {
 export const BackIcon = ({ size = 25, color, style }: Props) => {
   return <Feather name="skip-back" color={color} size={size} style={style} />;
 };
+export const SpinnerForwardIcon = ({ size = 25, color, style }: Props) => {
+  return (
+    <Fontisto
+      name="spinner-rotate-forward"
+      color={color}
+      size={size}
+      style={style}
+    />
+  );
+};
+export const BackInTimeIcon = ({ size = 25, color, style }: Props) => {
+  return <Entypo name="back-in-time" color={color} size={size} style={style} />;
+};
 
 //-- -----------------------------------
 //-- DROPBOX Icons

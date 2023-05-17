@@ -23,6 +23,7 @@ const PlaylistId = () => {
   // ) as AudioTrack;
 
   useEffect(() => {
+    console.log("in playlist route", playlistId, playlist?.id);
     const loadPlaylist = async () => {
       const loaded = await playbackActions.loadPlaylist(playlistId);
       setLoaded(loaded);
@@ -35,7 +36,7 @@ const PlaylistId = () => {
   console.log("LOADED", loaded);
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: playlist?.title }} />
+      <Stack.Screen options={{ title: playlist?.name }} />
       <TrackPlayerContainer />
     </View>
   );

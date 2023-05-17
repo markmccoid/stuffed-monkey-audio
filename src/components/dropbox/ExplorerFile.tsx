@@ -34,7 +34,6 @@ const ExplorerFile = ({ file, playlistId }: Props) => {
   useEffect(() => {
     if (playlistId) {
       if (!isDownloaded) {
-        console.log("STARTING DL ALL", file.alreadyDownload);
         downloadFile(file);
       }
     }

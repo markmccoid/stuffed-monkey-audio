@@ -12,9 +12,8 @@ const TrackSlider = () => {
   );
   const positionSeconds = usePlaybackStore((state) => state.currentPosition);
 
-  console.log(positionSeconds);
   return (
-    <View>
+    <View className="flex-col items-center">
       <Slider
         style={{ width: width - 20, height: 40 }}
         minimumValue={0}
@@ -26,9 +25,7 @@ const TrackSlider = () => {
           soundActions.updatePosition(Math.floor(val), true)
         }
         onSlidingStart={() => soundActions.pause()}
-        onSlidingComplete={(val) =>
-          soundActions.updatePosition(Math.floor(val))
-        }
+        onSlidingComplete={(val) => soundActions.updatePosition(val)}
       />
       <Text>{formatSeconds(positionSeconds || 0, "minimal")}</Text>
     </View>

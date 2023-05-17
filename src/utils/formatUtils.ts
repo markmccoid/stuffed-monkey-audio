@@ -20,7 +20,7 @@ export const formatSeconds = (
   secondsIn: number,
   type: "minimal" | "verbose"
 ) => {
-  if (!secondsIn) return 0;
+  // if (!secondsIn) return 0;
   const d = Number(secondsIn);
   const h = Math.floor(d / 3600);
   const m = Math.floor((d % 3600) / 60);

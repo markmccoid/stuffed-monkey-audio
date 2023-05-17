@@ -1,6 +1,6 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Image, Dimensions } from "react-native";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { TouchableOpacity } from "react-native-gesture-handler";
+
 import { Audio } from "expo-av";
 import {
   AudioTrack,
@@ -10,6 +10,8 @@ import {
 import { PlayIcon, PauseIcon } from "../common/svg/Icons";
 
 import TrackSlider from "./TrackSlider";
+import TrackPlayerControls from "./TrackPlayerControls";
+import TrackPlaybackState from "./TrackPlaybackState";
 
 type Props = {
   track: AudioTrack;
@@ -26,46 +28,35 @@ type PlaybackState = {
   shouldCorrectPitch?: boolean;
   volume?: number;
 };
+const { width, height } = Dimensions.get("window");
+
 const TrackPlayerContainer = () => {
   const playbackActions = usePlaybackStore((state) => state.actions);
   const track = usePlaybackStore((state) => state.currentTrack);
+  const playlist = usePlaybackStore((state) => state.currentPlaylist);
   const isPlaying = usePlaybackStore((state) => state.playbackState.isPlaying);
   const isLoaded = usePlaybackStore((state) => state.playbackState.isLoaded);
 
-  // const isPlaying = false;
-  // const isLoaded = true;
-  // const track = {};
-  //-- LOADS passed track sound
-  //-- and inits Store, but does not start playing
-  // useEffect(() => {
-  //   playbackActions.loadSoundFile(track.fileURI);
-  //   return () => {
-  //     soundActions.unloadSoundFile();
-  //   };
-  // }, []);
-
-  const play = async () => {
-    await playbackActions.play();
-  };
-  const pause = async () => {
-    playbackActions.pause();
-  };
-
   return (
-    <View style={styles.container}>
-      <Text>{track?.metadata?.title}</Text>
-      <TouchableOpacity
-        onPress={() => console.log("PLAY BUTTON")}
-        style={styles.actionButton}
-      >
-        <View>{!isPlaying ? <PlayIcon /> : <PauseIcon />}</View>
-      </TouchableOpacity>
-      <View className="p-2 border border-amber-800">
-        <TouchableOpacity
-          onPress={isLoaded && isPlaying ? () => pause() : () => play()}
-        >
-          <Text>{isLoaded && isPlaying ? "Pause" : "Play"}</Text>
-        </TouchableOpacity>
+    <View style={styles.container} className="border border-black">
+      <View className="border border-red-900 flex-grow w-full">
+        <Text>{track?.metadata?.title}</Text>
+        <View className="flex-grow  border border-yellow-900">
+          <Image
+            className="rounded-xl"
+            style={{
+              width: width / 1.25,
+              height: width / 1.25,
+              resizeMode: "stretch",
+              alignSelf: "center",
+            }}
+            source={{ uri: playlist?.imageURI }}
+          />
+        </View>
+        <TrackPlaybackState />
+        <View>
+          <TrackPlayerControls />
+        </View>
       </View>
       <View className="">
         <TrackSlider />
@@ -76,6 +67,7 @@ const TrackPlayerContainer = () => {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     padding: 5,
     flexDirection: "column",
     justifyContent: "flex-start",
