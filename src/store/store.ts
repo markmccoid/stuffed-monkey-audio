@@ -1,3 +1,4 @@
+import { NextIcon } from "./../components/common/svg/Icons";
 import { create } from "zustand";
 import uuid from "react-native-uuid";
 import { getAudioFileTags } from "../utils/audioUtils";
@@ -9,7 +10,7 @@ import {
 import { deleteFromFileSystem } from "./data/fileSystemAccess";
 import { AVPlaybackStatus, Audio, InterruptionModeIOS } from "expo-av";
 import { FileEntry } from "../utils/dropboxUtils";
-import { analyzePlaylistTracks } from "./storeUtils";
+import { analyzePlaylistTracks, parseTrackPositions } from "./storeUtils";
 import { sortBy } from "lodash";
 const defaultImage = require("../../assets/images/splash.png");
 
@@ -287,13 +288,16 @@ type PlaybackStoreState = {
   playbackState: PlaybackState;
   playbackError?: string;
   currentPlaylist?: Playlist;
-  currentTrack?: AudioTrack;
+  previousTracks: AudioTrack[];
+  currentTrack: AudioTrack;
+  nextTracks: AudioTrack[];
   currentPosition?: number;
   shouldLoadNextTrack: boolean;
   actions: {
     //- Loads the playlist information to the playback store.
     //- loading the current track indicated in the playlist
     loadPlaylist: (playlistId: string) => Promise<boolean>;
+    loadPreviousTrack: () => Promise<void>;
     loadNextTrack: () => Promise<void>;
     loadSoundFile: (fileURI: string) => Promise<void>;
     setPositionSeconds: (positionInSeconds: number) => Promise<void>;
@@ -303,6 +307,7 @@ type PlaybackStoreState = {
     // This allows visual numbers to change before final determination
     updatePosition: (newPosition: number, viewOnly?: boolean) => Promise<void>;
     jumpForward: (forwardSeconds: number) => Promise<void>;
+    jumpBack: (backSeconds: number) => Promise<void>;
     //! This function should not only unload the sound file, but FIRST
     //! it should update the playlist with the currentPosition, etx
     unloadSoundFile: () => Promise<void>;
@@ -322,11 +327,50 @@ export const usePlaybackStore = create<PlaybackStoreState>((set, get) => ({
   playbackState: { isLoaded: false },
   playbackError: undefined,
   currentPlaylist: undefined,
-  currentTrack: undefined,
+  previousTracks: [],
+  currentTrack: {} as AudioTrack,
+  nextTracks: [],
   currentPosition: 0,
   shouldLoadNextTrack: false,
   actions: {
     loadPlaylist: async (playlistId: string) => {
+      const trackActions = useTracksStore.getState().actions;
+      const playlist = trackActions.getPlaylist(playlistId);
+      if (!playlist?.trackIds)
+        throw new Error("Load Playlist, NO TRACKS error.");
+      // Each playlist stores the current track/position
+      // pull that info
+      const position = playlist?.currentPosition?.position || 0;
+      const trackId =
+        playlist?.currentPosition?.trackId || playlist?.trackIds[0];
+      console.log("TRACKID - POS->", trackId, position);
+
+      // GET the full track objects of all the track IDs
+      const tracks = playlist.trackIds.map((track) =>
+        trackActions.getTrack(track)
+      ) as AudioTrack[];
+      if (!tracks) throw new Error("loadPlaylist -> no tracks");
+      // Based on the currentTrackId in the playlist we are loading, get the state of the tracks
+      const { currTrack, prevTracks, nextTracks } = parseTrackPositions(
+        tracks,
+        trackId
+      );
+
+      if (!currTrack?.fileURI) return false;
+      await get().actions.loadSoundFile(currTrack?.fileURI);
+      console.log("loadedSoundFile", currTrack.id);
+      await get().actions.setPositionSeconds(position);
+      // Update the PlaybackObject with our current location
+      set({
+        currentPosition: position,
+        previousTracks: prevTracks,
+        currentTrack: currTrack,
+        nextTracks: nextTracks,
+        currentPlaylist: playlist,
+      });
+      return true;
+    },
+    loadPlaylistOLD: async (playlistId: string) => {
       const trackActions = useTracksStore.getState().actions;
       const playlist = trackActions.getPlaylist(playlistId);
       // Each playlist stores the current track/position
@@ -349,8 +393,102 @@ export const usePlaybackStore = create<PlaybackStoreState>((set, get) => ({
       });
       return true;
     },
+    loadPreviousTrack: async () => {
+      let currentTrack = get().currentTrack;
+      let nextTracks = [...get().nextTracks];
+      let prevTracks = [...get().previousTracks];
+      let newCurrTrack;
+      console.log(
+        "PREV TRACKS",
+        prevTracks.map((el) => el.id)
+      );
+      console.log("CURR TRACK", currentTrack.id);
+      console.log(
+        "NEXT TRACK",
+        nextTracks.map((el) => el.id)
+      );
+      // If 1st track is the current track, then load do nothing.
+      // We don't need to load or play
+      if (prevTracks.length === 0) {
+        // if we are at first track, set the newCurrTrack to same
+        // It will load and reset to zero
+        newCurrTrack = currentTrack;
+      } else {
+        // Go to previous track
+        newCurrTrack = prevTracks.pop();
+        nextTracks.unshift(currentTrack);
+      }
+      // Unload previous file
+      await get().actions.unloadSoundFile();
+      if (!newCurrTrack?.fileURI) return;
+      await get().actions.loadSoundFile(newCurrTrack?.fileURI);
+      // console.log("loadedSoundFile", nextTrack.id);
+      await get().actions.setPositionSeconds(0);
+      get().previousTracks.length === 0
+        ? await get().actions.pause()
+        : await get().actions.play();
+      // set mew track state
+      set({
+        previousTracks: prevTracks,
+        currentTrack: newCurrTrack,
+        currentPosition: 0,
+        nextTracks: nextTracks,
+      });
+    },
     loadNextTrack: async () => {
       set({ shouldLoadNextTrack: false });
+      let isLastTrack = false;
+      // load next track
+      let currPlaylist = get().currentPlaylist;
+      // let currTrack = get().currentTrack?.id;
+      let currentTrack = get().currentTrack;
+      let nextTracks = [...get().nextTracks];
+      let prevTracks = [...get().previousTracks];
+
+      // shift() will return the first element of the array AND modify the nextTracks array
+      let newCurrTrack;
+      console.log(
+        "PREV TRACKS",
+        prevTracks.map((el) => el.id)
+      );
+      console.log("CURR TRACK", currentTrack.id);
+      console.log(
+        "NEXT TRACK",
+        nextTracks.map((el) => el.id)
+      );
+      if (nextTracks.length === 0) {
+        // reset playlist to first track
+        newCurrTrack = prevTracks.shift();
+        nextTracks = [...prevTracks, currentTrack];
+        prevTracks = [];
+      } else {
+        // Go to next track
+        newCurrTrack = nextTracks.shift();
+        prevTracks.push(currentTrack);
+      }
+      // Unload previous file
+      await get().actions.unloadSoundFile();
+      // set mew track state
+      set({
+        previousTracks: prevTracks,
+        currentTrack: newCurrTrack,
+        currentPosition: 0,
+        nextTracks: nextTracks,
+      });
+
+      if (!newCurrTrack?.fileURI) return;
+      await get().actions.loadSoundFile(newCurrTrack?.fileURI);
+      // console.log("loadedSoundFile", nextTrack.id);
+      await get().actions.setPositionSeconds(0);
+      prevTracks.length !== 0
+        ? await get().actions.play()
+        : await get().actions.pause();
+
+      console.log("Finished track", get().currentPlaylist?.trackIds);
+    },
+    loadNextTrackOLD: async () => {
+      set({ shouldLoadNextTrack: false });
+      let isLastTrack = false;
       // load next track
       let currPlaylist = usePlaybackStore.getState().currentPlaylist;
       let currTrack = usePlaybackStore.getState().currentTrack?.id;
@@ -371,6 +509,8 @@ export const usePlaybackStore = create<PlaybackStoreState>((set, get) => ({
           currentPosition: 0,
         }));
       } else {
+        // Finished last track in Playlist
+        // Currently loading first track
         nextTrack = useTracksStore
           .getState()
           .actions.getTrack(currPlaylist?.trackIds[0] || currTrack);
@@ -378,12 +518,13 @@ export const usePlaybackStore = create<PlaybackStoreState>((set, get) => ({
           currentTrack: nextTrack,
           currentPosition: 0,
         }));
+        isLastTrack = true;
       }
       if (!nextTrack?.fileURI) return;
       await get().actions.loadSoundFile(nextTrack?.fileURI);
       // console.log("loadedSoundFile", nextTrack.id);
       await get().actions.setPositionSeconds(0);
-      await get().actions.play();
+      !isLastTrack ? await get().actions.play() : await get().actions.pause();
 
       console.log("Finished track", get().currentPlaylist?.trackIds);
     },
@@ -442,11 +583,15 @@ export const usePlaybackStore = create<PlaybackStoreState>((set, get) => ({
       const playbackObj = get().playbackObj;
       // await playbackObj?.pauseAsync();
       await playbackObj?.setStatusAsync({ positionMillis });
-
-      // await playbackObj?.playAsync();
-      // set((state) => ({
-      //   currentPosition: (state.currentPosition || 0) + forwardSeconds,
-      // }));
+    },
+    jumpBack: async (backSeconds) => {
+      //!! NEED To check if at beginning of first track in playlist
+      //!! OR if at the beginning of previous track so that we switch to that track.
+      const positionMillis =
+        ((get().currentPosition || 0) - backSeconds) * 1000;
+      const playbackObj = get().playbackObj;
+      // await playbackObj?.pauseAsync();
+      await playbackObj?.setStatusAsync({ positionMillis });
     },
     unloadSoundFile: async () => {
       const playbackObj = get().playbackObj;

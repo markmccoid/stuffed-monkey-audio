@@ -7,7 +7,13 @@ import {
 } from "react-native";
 import React from "react";
 import { usePlaybackStore } from "../../store/store";
-import { BackInTimeIcon, PauseIcon, PlayIcon } from "../common/svg/Icons";
+import {
+  BackIcon,
+  BackInTimeIcon,
+  NextIcon,
+  PauseIcon,
+  PlayIcon,
+} from "../common/svg/Icons";
 
 type Props = {
   style?: ViewStyle;
@@ -28,7 +34,11 @@ const TrackPlayerControls = ({ style }: Props) => {
 
   return (
     <View className="flex-row gap-10 items-center justify-center" style={style}>
-      <TouchableOpacity>
+      <TouchableOpacity onPress={() => playbackActions.loadPreviousTrack()}>
+        <BackIcon size={CONTROLSIZE} />
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => playbackActions.jumpBack(10)}>
         <BackInTimeIcon size={CONTROLSIZE} />
       </TouchableOpacity>
       <TouchableOpacity
@@ -48,6 +58,9 @@ const TrackPlayerControls = ({ style }: Props) => {
           style={{ transform: [{ scaleX: -1 }] }}
           size={CONTROLSIZE}
         />
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => playbackActions.loadNextTrack()}>
+        <NextIcon size={CONTROLSIZE} />
       </TouchableOpacity>
     </View>
   );

@@ -13,7 +13,7 @@ const TrackPlaybackState = () => {
   );
   useEffect(() => {
     const loadNext = async () => {
-      console.log("PLAYER- UseEffect SHOULD LOAD", shouldLoadNext, loadingNext);
+      // console.log("PLAYER- UseEffect SHOULD LOAD", shouldLoadNext, loadingNext);
       setLoadingNext(true);
       if (shouldLoadNext && !loadingNext) {
         console.log("LOAD NEXT TRACK");
